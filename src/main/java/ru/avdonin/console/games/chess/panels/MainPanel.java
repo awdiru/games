@@ -1,4 +1,4 @@
-package ru.avdonin.console.games.chess.panes;
+package ru.avdonin.console.games.chess.panels;
 
 import lombok.Getter;
 

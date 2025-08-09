@@ -1,6 +1,6 @@
 package ru.avdonin.console.games.chess;
 
-import ru.avdonin.console.games.chess.panes.MainPanel;
+import ru.avdonin.console.games.chess.panels.MainPanel;
 import ru.avdonin.console.util.Game;
 
 import javax.swing.*;

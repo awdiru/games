@@ -1,4 +1,4 @@
-package ru.avdonin.console.games.chess.panes;
+package ru.avdonin.console.games.chess.panels;
 
 import ru.avdonin.console.games.chess.pieces.Piece;
 import ru.avdonin.console.games.chess.util.Constants;

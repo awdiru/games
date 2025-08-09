@@ -2,8 +2,8 @@ package ru.avdonin.console.games.chess.pieces;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.console.games.chess.panes.ChessPanel;
-import ru.avdonin.console.games.chess.panes.HistoryPanel;
+import ru.avdonin.console.games.chess.panels.ChessPanel;
+import ru.avdonin.console.games.chess.panels.HistoryPanel;
 import ru.avdonin.console.games.chess.util.Cell;
 import ru.avdonin.console.games.chess.util.Constants;
 import ru.avdonin.console.games.chess.util.Direction;

@@ -1,7 +1,7 @@
 package ru.avdonin.console.games.chess.pieces.impl;
 
 import lombok.Getter;
-import ru.avdonin.console.games.chess.panes.ChessPanel;
+import ru.avdonin.console.games.chess.panels.ChessPanel;
 import ru.avdonin.console.games.chess.pieces.Piece;
 import ru.avdonin.console.games.chess.util.Cell;
 import ru.avdonin.console.games.chess.util.NumberCell;
