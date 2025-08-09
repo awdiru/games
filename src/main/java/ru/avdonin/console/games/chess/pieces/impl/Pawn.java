@@ -3,7 +3,7 @@ package ru.avdonin.console.games.chess.pieces.impl;
 import ru.avdonin.console.games.chess.panels.ChessPanel;
 import ru.avdonin.console.games.chess.pieces.Piece;
 import ru.avdonin.console.games.chess.util.Cell;
-import ru.avdonin.console.games.chess.util.HistoryRecord;
+import ru.avdonin.console.games.chess.util.MoveRecord;
 import ru.avdonin.console.games.chess.util.NumberCell;
 
 import java.util.HashSet;
@@ -54,7 +54,7 @@ public class Pawn extends Piece {
     }
 
     private void addTakingAisle(Set<NumberCell> possibleMoves) {
-        HistoryRecord record = history.getLastRecord();
+        MoveRecord record = history.getLastRecord();
         if (record == null) return;
         if (!(record.piece() instanceof Pawn)) return;
 

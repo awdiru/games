@@ -13,8 +13,8 @@ import java.awt.event.MouseEvent;
 
 @Getter
 public class Cell extends JPanel {
-    private static final Color WHITE = Color.WHITE;
-    private static final Color BLACK = new Color(142, 144, 255);
+    public static final Color WHITE = Color.WHITE;
+    public static final Color BLACK = new Color(142, 144, 255);
 
     private final NumberCell numberCell;
     private final ChessPanel parent;

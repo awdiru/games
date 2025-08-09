@@ -55,6 +55,7 @@ public abstract class Piece extends JPanel {
         parent.setWhiteMove(!isWhite);
         parent.checkingCheck();
         parent.checkingCheckmate();
+        parent.getParent().getHistoryPanel().setMoveMarker();
     }
 
     public void calculateMoves() {
