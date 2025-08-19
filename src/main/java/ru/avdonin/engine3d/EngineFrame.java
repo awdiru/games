@@ -15,7 +15,7 @@ public class EngineFrame extends JFrame {
     private final RenderPanel renderPanel;
 
     public EngineFrame(String frameName, RenderPanel renderPanel) {
-        setPreferredSize(new Dimension(800, 600));
+        setPreferredSize(new Dimension(1280, 720));
         setTitle(frameName);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
@@ -35,15 +35,14 @@ public class EngineFrame extends JFrame {
 
             Point3D p1 = new Point3D(0, 0, 200);
             Point3D p2 = new Point3D(0, 1, 200);
-            Point3D p3 = new Point3D(1, 0, 200);
+            Point3D p3 = new Point3D(100, 0, 200);
 
-            Cube cube = new Cube(p1, 200);
+            Cube cube = new Cube(p1, 300);
 
             renderPanel.addObject("Cube1", cube);
 
-            Timer timer = new Timer(50, e -> {
-               // cube.rotation(p1, new Vector3D(p1, p2), 5);
-                camera.rotation(p1, new Vector3D(p1, p3), 5);
+            Timer timer = new Timer(42, e -> {
+                cube.rotation(p1, new Vector3D(p1, p2), 1);
                 renderPanel.repaint();
             });
             timer.start();

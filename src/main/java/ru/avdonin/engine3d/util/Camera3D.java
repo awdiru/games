@@ -7,16 +7,19 @@ import ru.avdonin.engine3d.helpers.UtilHelper;
 @Getter
 public class Camera3D {
     private final Vector3D vector;
+    private final Point3D point;
     @Setter
     private double zoom = 1;
     private double viewingAngle = Math.PI / 2;
 
     public Camera3D(Point3D p, Vector3D v) {
         this.vector = getNormalVector(v, p);
+        this.point = p;
     }
 
     public Camera3D(Vector3D v) {
         this.vector = getNormalVector(v);
+        this.point = v.getStart();
     }
 
     public void move(Point3D p) {
