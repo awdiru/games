@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 public class Cube extends Object3D {
-    private final Point3D center;
 
     public Cube(Point3D p, double size) {
-        center = new Point3D(p);
+        point.move(p);
         initPolygons(size);
     }
     /*
@@ -52,7 +51,7 @@ public class Cube extends Object3D {
     private List<Point3D> initPoints(double size) {
         double s = size / 2;
 
-        Point3D p1 = new Point3D(center);
+        Point3D p1 = new Point3D(point);
         p1.move(p1.getX() - s, p1.getY() - s, p1.getZ() - s);
 
         Point3D p2 = new Point3D(p1);
@@ -76,6 +75,6 @@ public class Cube extends Object3D {
         Point3D p8 = new Point3D(p7);
         p8.move(p7.getX(), p7.getY() - size, p7.getZ());
 
-        return List.of(center, p1, p2, p3, p4, p5, p6, p7, p8);
+        return List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 }

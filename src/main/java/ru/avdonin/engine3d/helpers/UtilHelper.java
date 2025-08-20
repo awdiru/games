@@ -12,14 +12,6 @@ public class UtilHelper {
         return Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz)));
     }
 
-    public static double getRadians(double x) {
-        return Math.PI * (x / 180);
-    }
-
-    public static double getDegrees(double x) {
-        return x * (180 / Math.PI);
-    }
-
     public static Vector3D getNormal(Point3D p1, Point3D p2, Point3D p3) {
         double x1 = p1.getX();
         double y1 = p1.getY();
@@ -37,7 +29,7 @@ public class UtilHelper {
         double ny = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
         double nz = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
 
-        return new Vector3D(new Point3D(), new Point3D(nx, ny, nz));
+        return getNormalVector(new Vector3D(nx, ny, nz));
     }
 
     public static Vector3D getNormal(Polygon3D p) {
@@ -57,33 +49,39 @@ public class UtilHelper {
         double z2 = nv2.getEnd().getZ();
 
         double m = x1 * x2 + y1 * y2 + z1 * z2;
+        m = Math.max(-1.0, Math.min(1.0, m));
         return Math.acos(m);
     }
 
     public static double getAngle(Vector3D v1, Vector3D v2) {
         double angle = getAngleRad(v1, v2);
-        return getDegrees(angle);
+        return Math.toDegrees(angle);
     }
 
     public static Vector3D getNormalVector(Vector3D v) {
-        double dx = v.getStart().getX();
-        double dy = v.getStart().getY();
-        double dz = v.getStart().getZ();
-
-        double x = v.getEnd().getX() - dx;
-        double y = v.getEnd().getY() - dy;
-        double z = v.getEnd().getZ() - dz;
+        Point3D d = v.getDelta();
 
         double length = v.getLength();
 
-        double xe = x / length;
-        double ye = y / length;
-        double ze = z / length;
+        if (length < 1e-10)
+            return new Vector3D(0, 0, 0);
 
-        return new Vector3D(new Point3D(), new Point3D(xe, ye, ze));
+        double xe = d.getX() / length;
+        double ye = d.getY() / length;
+        double ze = d.getZ() / length;
+
+        return new Vector3D(xe, ye, ze);
     }
 
     public static Point3D getCenterPolygon(Polygon3D p) {
+        Point3D p1 = p.getP1();
+        Point3D p2 = p.getP2();
+        Point3D p3 = p.getP3();
 
+        double x = (p1.getX() + p2.getX() + p3.getX()) / 3;
+        double y = (p1.getY() + p2.getY() + p3.getY()) / 3;
+        double z = (p1.getZ() + p2.getZ() + p3.getZ()) / 3;
+
+        return new Point3D(x, y, z);
     }
 }

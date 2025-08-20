@@ -1,10 +1,17 @@
 package ru.avdonin.engine3d.util;
 
-public class Vector3D extends Edge3D{
+public class Vector3D extends Edge3D {
+
+    public Vector3D(double x, double y, double z) {
+        this(new Point3D(x, y, z));
+    }
+
+    public Vector3D(Point3D end) {
+        super(new Point3D(), end);
+    }
 
     public Vector3D(Point3D start, Point3D end) {
-        this.p1 = start;
-        this.p2 = end;
+        super(start, end);
     }
 
     public Point3D getStart() {
@@ -25,9 +32,17 @@ public class Vector3D extends Edge3D{
 
     @Override
     public String toString() {
-        return "Vector3D{" +
-                "start=" + p1 +
-                ", end=" + p2 +
-                '}';
+        if (!getStart().equals(new Point3D()))
+            return "Vector{" +
+                    "start" + p1 +
+                    ", end" + p2 +
+                    ", length = " + length +
+                    "}";
+
+        String v = "Vector{" + p2;
+
+        if (length != 1)
+            return v + ", length = " + length + "};";
+        else return v + "};";
     }
 }

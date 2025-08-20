@@ -51,7 +51,7 @@ public class Point3D {
         this.translate(v.getDelta());
     }
 
-    public void rotationRad(Point3D point, Vector3D normal, double angle){
+    public void rotationRad(Point3D point, Vector3D normal, double angle) {
         if (normal.getLength() < 1e-10) return;
 
         Point3D axis = normal.getDelta();
@@ -59,7 +59,7 @@ public class Point3D {
         double ay = axis.getY();
         double az = axis.getZ();
 
-        double length = Math.sqrt(ax*ax + ay*ay + az*az);
+        double length = Math.sqrt(ax * ax + ay * ay + az * az);
         if (length < 1e-10) return;
 
         double nx = ax / length;
@@ -89,29 +89,9 @@ public class Point3D {
     }
 
     public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, UtilHelper.getRadians(angle));
+        rotationRad(point, normal, Math.toRadians(angle));
     }
 
-    public double dot(Point3D other) {
-        return this.x * other.x + this.y * other.y + this.z * other.z;
-    }
-
-    public Point3D cross(Point3D other) {
-        double x = this.y * other.z - this.z * other.y;
-        double y = this.z * other.x - this.x * other.z;
-        double z = this.x * other.y - this.y * other.x;
-        return new Point3D(x, y, z);
-    }
-
-    public Point3D normalized() {
-        double length = Math.sqrt(x*x + y*y + z*z);
-        if (length < 1e-10) return new Point3D();
-        return new Point3D(x/length, y/length, z/length);
-    }
-
-    public Point3D subtract(Point3D other) {
-        return new Point3D(this.x - other.x, this.y - other.y, this.z - other.z);
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -127,6 +107,6 @@ public class Point3D {
 
     @Override
     public String toString() {
-        return "Point3D{" + "x=" + x + ", y=" + y + ", z=" + z + '}';
+        return "(" + x + ", " + y + ", " + z + ")";
     }
 }

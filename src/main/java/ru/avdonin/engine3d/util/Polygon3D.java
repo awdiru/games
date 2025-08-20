@@ -2,7 +2,6 @@ package ru.avdonin.engine3d.util;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.UtilHelper;
 
 @Getter
 @Setter
@@ -66,6 +65,6 @@ public class Polygon3D {
     }
 
     public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, UtilHelper.getRadians(angle));
+        rotationRad(point, normal, Math.toRadians(angle));
     }
 }

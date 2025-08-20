@@ -2,7 +2,6 @@ package ru.avdonin.engine3d.util;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.UtilHelper;
 
 import java.util.*;
 
@@ -10,7 +9,8 @@ import java.util.*;
 @Setter
 public class Object3D {
     protected final Set<Polygon3D> polygons = new HashSet<>();
-    protected final Set<Point3D> points = new HashSet<>();
+    protected final Point3D point = new Point3D();
+    protected final Set<Point3D> points = new HashSet<>(Set.of(point));
 
     public Object3D() {
     }
@@ -32,6 +32,12 @@ public class Object3D {
         this.polygons.addAll(polygons);
     }
 
+    public void move(Point3D p) {
+        Vector3D v = new Vector3D(point, p);
+        for (Point3D po : points)
+            po.translate(v);
+    }
+
     public void translate(Vector3D v) {
         for (Point3D p: points)
             p.translate(v);
@@ -43,7 +49,7 @@ public class Object3D {
     }
 
     public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, UtilHelper.getRadians(angle));
+        rotationRad(point, normal, Math.toRadians(angle));
     }
 
     protected void addPolygon(Polygon3D pol) {
@@ -51,5 +57,8 @@ public class Object3D {
         points.add(pol.getP1());
         points.add(pol.getP2());
         points.add(pol.getP3());
+
+        if (point.equals(new Point3D()))
+            point.move(pol.getP1());
     }
 }

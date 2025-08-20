@@ -9,6 +9,7 @@ import ru.avdonin.engine3d.helpers.UtilHelper;
 public class Edge3D {
     protected Point3D p1;
     protected Point3D p2;
+    protected double length;
 
     public Edge3D() {
         this(new Point3D(), new Point3D());
@@ -21,11 +22,13 @@ public class Edge3D {
     public Edge3D(Point3D p1, Point3D p2) {
         this.p1 = p1;
         this.p2 = p2;
+        this.length = calculateLength();
     }
 
     public void move (Point3D p1, Point3D p2) {
         this.p1.move(p1);
         this.p2.move(p2);
+        this.length = calculateLength();
     }
 
     public void move(Edge3D e) {
@@ -35,6 +38,7 @@ public class Edge3D {
     public void translate(Point3D dP1, Point3D dP2) {
         this.p1.translate(dP1);
         this.p2.translate(dP2);
+        this.length = calculateLength();
     }
 
     public void translate(Edge3D e) {
@@ -44,6 +48,7 @@ public class Edge3D {
     public void translate(Vector3D v) {
         this.p1.translate(v);
         this.p2.translate(v);
+        this.length = calculateLength();
     }
 
     public void rotationRad(Point3D point, Vector3D normal, double angle){
@@ -52,10 +57,10 @@ public class Edge3D {
     }
 
     public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, UtilHelper.getRadians(angle));
+        rotationRad(point, normal, Math.toRadians(angle));
     }
 
-    public double getLength() {
+    protected double calculateLength() {
         return UtilHelper.getLength(p1, p2);
     }
 }

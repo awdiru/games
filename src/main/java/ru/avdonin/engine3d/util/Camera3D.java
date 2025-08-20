@@ -1,45 +1,55 @@
 package ru.avdonin.engine3d.util;
 
+import jdk.jshell.execution.Util;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
 
 @Getter
 public class Camera3D {
-    private final Vector3D vector;
+    private final Vector3D vectorX = new Vector3D(0, 0, 0);
+    private final Vector3D vectorY = new Vector3D(0, 0, 0);
+    private final Vector3D vectorZ = new Vector3D(0, 0, 0);
     private final Point3D point;
     @Setter
     private double zoom = 1;
     private double viewingAngle = Math.PI / 2;
 
     public Camera3D(Point3D p, Vector3D v) {
-        this.vector = getNormalVector(v, p);
         this.point = p;
+        this.vectorZ.move(UtilHelper.getNormalVector(v));
+        computeVectorX();
+        computeVectorY();
     }
 
     public Camera3D(Vector3D v) {
-        this.vector = getNormalVector(v);
         this.point = v.getStart();
+        this.vectorZ.move(UtilHelper.getNormalVector(v));
+        computeVectorX();
+        computeVectorY();
     }
 
     public void move(Point3D p) {
-        this.vector.move(getNormalVector(vector, p));
+        this.point.move(p);
     }
 
     public void translate(Vector3D v) {
-        this.vector.translate(v);
+        this.point.translate(v);
     }
 
-    public void rotationRad(Point3D p, Vector3D normal, double angle) {
-        this.vector.rotationRad(p, normal, angle);
+    public void rotationRad(Point3D point, Vector3D vector, double angle) {
+        this.vectorX.rotationRad(new Point3D(), vector, angle);
+        this.vectorY.rotationRad(new Point3D(), vector, angle);
+        this.vectorZ.rotationRad(new Point3D(), vector, angle);
+        this.point.rotationRad(point, vector, angle);
     }
 
-    public void rotation(Point3D p, Vector3D normal, double angle) {
-        rotationRad(p, normal, UtilHelper.getRadians(angle));
+    public void rotation(Point3D point, Vector3D vector, double angle) {
+        rotationRad(point, vector, Math.toRadians(angle));
     }
 
     public void setlViewingAngle(double x) {
-        this.viewingAngle = UtilHelper.getRadians(x);
+        this.viewingAngle = Math.toRadians(x);
     }
 
     public void setViewingAngleRad(double x) {
@@ -53,35 +63,47 @@ public class Camera3D {
         return h / tan;
     }
 
-    private Vector3D getNormalVector(Vector3D v, Point3D p) {
-        double dx = v.getStart().getX() - p.getX();
-        double dy = v.getStart().getY() - p.getY();
-        double dz = v.getStart().getZ() - p.getZ();
+    private void computeVectorX() {
+        Vector3D worldX = new Vector3D(1, 0, 0);
 
-        double xe = v.getEnd().getX() - dx;
-        double ye = v.getEnd().getY() - dy;
-        double ze = v.getEnd().getZ() - dz;
+        double angle = UtilHelper.getAngleRad(vectorZ, worldX);
 
-        double length = v.getLength();
-
-        double x = p.getX() + (xe - p.getX()) / length;
-        double y = p.getY() + (ye - p.getY()) / length;
-        double z = p.getZ() + (ze - p.getZ()) / length;
-
-        return new Vector3D(p, new Point3D(x, y, z));
+        double xx = Math.sin(angle);
+        double yx = 0;
+        double zx = Math.cos(angle);
+        Vector3D vectorX = UtilHelper.getNormalVector(new Vector3D(xx, yx, zx));
+        this.vectorX.move(vectorX);
     }
 
-    private Vector3D getNormalVector(Vector3D v) {
-        double xs = v.getStart().getX();
-        double ys = v.getStart().getY();
-        double zs = v.getStart().getZ();
+    private void computeVectorY() {
+        double xz = vectorZ.getEnd().getX();
+        double yz = vectorZ.getEnd().getY();
+        double zz = vectorZ.getEnd().getZ();
 
-        double length = v.getLength();
+        double xx = vectorX.getEnd().getX();
+        double yx = vectorX.getEnd().getY();
+        double zx = vectorX.getEnd().getZ();
 
-        double xe = xs + (v.getEnd().getX() - xs) / length;
-        double ye = ys + (v.getEnd().getY() - ys) / length;
-        double ze = zs + (v.getEnd().getZ() - zs) / length;
+        double xy = yz * zx - zz * yx;
+        double yy = zz * xx - xz * zx;
+        double zy = xz * yx - yz * xx;
 
-        return new Vector3D(v.getStart(), new Point3D(xe, ye, ze));
+        Vector3D vectorY = new Vector3D(xy, yy, zy);
+        if (vectorY.getLength() > 1.001 || vectorY.getLength() < 0.999)
+            vectorY = UtilHelper.getNormalVector(vectorY);
+
+        this.vectorY.move(vectorY);
+    }
+
+    public Point3D getVectorXEnd() {
+        return vectorX.getEnd();
+    }
+
+    public Point3D getVectorYEnd() {
+        return vectorY.getEnd();
+    }
+
+    public Point3D getVectorZEnd() {
+        return vectorZ.getEnd();
     }
 }
