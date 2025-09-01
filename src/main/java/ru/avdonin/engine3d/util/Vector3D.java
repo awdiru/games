@@ -30,6 +30,12 @@ public class Vector3D extends Edge3D {
         );
     }
 
+    public double dot(Vector3D other) {
+        return this.getDelta().getX() * other.getDelta().getX() +
+                this.getDelta().getY() * other.getDelta().getY() +
+                this.getDelta().getZ() * other.getDelta().getZ();
+    }
+
     @Override
     public String toString() {
         if (!getStart().equals(new Point3D()))

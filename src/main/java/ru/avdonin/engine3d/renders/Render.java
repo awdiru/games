@@ -26,4 +26,8 @@ public abstract class Render extends JPanel {
     }
 
     public abstract void renderPoint(Point3D point, Color color);
+
+    public abstract void renderLine(Edge3D edge3D, Color color);
+
+    public abstract void init();
 }
