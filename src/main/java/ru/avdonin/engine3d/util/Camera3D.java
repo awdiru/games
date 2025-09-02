@@ -1,32 +1,28 @@
 package ru.avdonin.engine3d.util;
 
-import jdk.jshell.execution.Util;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
 
 @Getter
+@Setter
 public class Camera3D {
     private final Vector3D vectorX = new Vector3D(0, 0, 0);
     private final Vector3D vectorY = new Vector3D(0, 0, 0);
     private final Vector3D vectorZ = new Vector3D(0, 0, 0);
     private final Point3D point;
-    @Setter
     private double zoom = 1;
     private double viewingAngle = Math.PI / 2;
 
     public Camera3D(Point3D p, Vector3D v) {
         this.point = p;
         this.vectorZ.move(UtilHelper.getNormalVector(v));
-        computeVectorX();
-        computeVectorY();
+        UtilHelper.computeVectorX(vectorX, vectorZ);
+        UtilHelper.computeVectorY(vectorX, vectorY, vectorZ);
     }
 
     public Camera3D(Vector3D v) {
-        this.point = v.getStart();
-        this.vectorZ.move(UtilHelper.getNormalVector(v));
-        computeVectorX();
-        computeVectorY();
+        this(v.getStart(), v);
     }
 
     public void move(Point3D p) {
@@ -61,38 +57,6 @@ public class Camera3D {
         double h = (double) height / 2;
         double tan = Math.tan(angle);
         return h / tan;
-    }
-
-    private void computeVectorX() {
-        Vector3D worldX = new Vector3D(1, 0, 0);
-
-        double angle = UtilHelper.getAngleRad(vectorZ, worldX);
-
-        double xx = Math.sin(angle);
-        double yx = 0;
-        double zx = Math.cos(angle);
-        Vector3D vectorX = UtilHelper.getNormalVector(new Vector3D(xx, yx, zx));
-        this.vectorX.move(vectorX);
-    }
-
-    private void computeVectorY() {
-        double xz = vectorZ.getEnd().getX();
-        double yz = vectorZ.getEnd().getY();
-        double zz = vectorZ.getEnd().getZ();
-
-        double xx = vectorX.getEnd().getX();
-        double yx = vectorX.getEnd().getY();
-        double zx = vectorX.getEnd().getZ();
-
-        double xy = yz * zx - zz * yx;
-        double yy = zz * xx - xz * zx;
-        double zy = xz * yx - yz * xx;
-
-        Vector3D vectorY = new Vector3D(xy, yy, zy);
-        if (vectorY.getLength() > 1.001 || vectorY.getLength() < 0.999)
-            vectorY = UtilHelper.getNormalVector(vectorY);
-
-        this.vectorY.move(vectorY);
     }
 
     public Point3D getVectorXEnd() {

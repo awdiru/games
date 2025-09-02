@@ -1,9 +1,6 @@
 package ru.avdonin.engine3d.helpers;
 
-import ru.avdonin.engine3d.util.Edge3D;
-import ru.avdonin.engine3d.util.Point3D;
-import ru.avdonin.engine3d.util.Polygon3D;
-import ru.avdonin.engine3d.util.Vector3D;
+import ru.avdonin.engine3d.util.*;
 
 public class UtilHelper {
     public static double getLength(Point3D p1, Point3D p2) {
@@ -154,4 +151,47 @@ public class UtilHelper {
         return (u >= 0) && (v >= 0) && (u + v <= 1) ? intersectionPoint : null;
     }
 
+    public static double getCameraAngle(Polygon3D polygon, Camera3D camera) {
+        Vector3D polygonNormal = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
+        Point3D cameraPoint = camera.getPoint();
+        Point3D centerPolygon = UtilHelper.getCenterPolygon(polygon);
+        Vector3D toCamera = new Vector3D(centerPolygon, cameraPoint);
+        return UtilHelper.getAngle(polygonNormal, toCamera);
+    }
+
+    public static void computeVectorX(Vector3D vectorX, Vector3D vectorZ) {
+        Vector3D worldX = new Vector3D(1, 0, 0);
+
+        double angle = UtilHelper.getAngleRad(vectorZ, worldX);
+
+        double xx = Math.sin(angle);
+        double yx = 0;
+        double zx = Math.cos(angle);
+
+        Vector3D vectorXNew = new Vector3D(xx, yx, zx);
+        if (vectorXNew.getLength() > 1.001 || vectorXNew.getLength() < 0.999)
+            vectorXNew = UtilHelper.getNormalVector(vectorXNew);
+
+        vectorX.move(vectorXNew);
+    }
+
+    public static void computeVectorY(Vector3D vectorX, Vector3D vectorY, Vector3D vectorZ) {
+        double xz = vectorZ.getEnd().getX();
+        double yz = vectorZ.getEnd().getY();
+        double zz = vectorZ.getEnd().getZ();
+
+        double xx = vectorX.getEnd().getX();
+        double yx = vectorX.getEnd().getY();
+        double zx = vectorX.getEnd().getZ();
+
+        double xy = yz * zx - zz * yx;
+        double yy = zz * xx - xz * zx;
+        double zy = xz * yx - yz * xx;
+
+        Vector3D vectorYNew = new Vector3D(xy, yy, zy);
+        if (vectorYNew.getLength() > 1.001 || vectorYNew.getLength() < 0.999)
+            vectorYNew = UtilHelper.getNormalVector(vectorYNew);
+
+        vectorY.move(vectorYNew);
+    }
 }

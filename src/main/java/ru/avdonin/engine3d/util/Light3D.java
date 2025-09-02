@@ -1,13 +1,19 @@
 package ru.avdonin.engine3d.util;
 
 import lombok.Getter;
+import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
+import ru.avdonin.engine3d.renders.zBuffer.ShadowMap;
 
 @Getter
 public class Light3D extends Object3D {
     private int intensity;
     private Vector3D vector;
     private double angle;
+    @Setter
+    private boolean hasMoved = false;
+    private ShadowMap shadowMap;
+    private boolean castsShadows = true;
 
     public Light3D(Point3D start) {
         this(start, 0);
@@ -26,12 +32,28 @@ public class Light3D extends Object3D {
         this.intensity = intensity;
         this.angle = angle;
         this.vector = UtilHelper.getNormalVector(vector);
+        if (castsShadows) {
+            this.shadowMap = new ShadowMap(1024);
+        }
     }
 
     @Override
     public void rotationRad(Point3D point, Vector3D normal, double angle) {
         super.rotationRad(point, normal, angle);
         this.vector.rotation(new Point3D(), normal, angle);
+        this.hasMoved = true;
+    }
+
+    @Override
+    public void move(Point3D p) {
+        super.move(p);
+        this.hasMoved = true;
+    }
+
+    @Override
+    public void translate(Vector3D v) {
+        super.translate(v);
+        this.hasMoved = true;
     }
 
     @Override
@@ -54,5 +76,12 @@ public class Light3D extends Object3D {
 
     public void setAngle(double angle) {
         this.setAngleRad(Math.toRadians(angle));
+    }
+
+    public void setCastsShadows(boolean castsShadows) {
+        this.castsShadows = castsShadows;
+        if (castsShadows && shadowMap == null) {
+            shadowMap = new ShadowMap(1024);
+        }
     }
 }

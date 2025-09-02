@@ -14,6 +14,10 @@ public class Vector3D extends Edge3D {
         super(start, end);
     }
 
+    public Vector3D (Vector3D vector) {
+        super(new Point3D(vector.getStart()), new Point3D(vector.getEnd()));
+    }
+
     public Point3D getStart() {
         return p1;
     }

@@ -2,8 +2,11 @@ package ru.avdonin.engine3d.renders.impl;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.helpers.BufferHelper;
 import ru.avdonin.engine3d.helpers.UtilHelper;
 import ru.avdonin.engine3d.renders.Render;
+import ru.avdonin.engine3d.renders.zBuffer.ShadowMap;
+import ru.avdonin.engine3d.renders.zBuffer.ZBuffer;
 import ru.avdonin.engine3d.util.*;
 
 import java.awt.*;
@@ -15,7 +18,9 @@ import java.util.*;
 public class SimpleRender extends Render {
     private final Map<Point3D, Color> rendererPoints = new HashMap<>();
     private final Map<Edge3D, Color> rendererLines = new HashMap<>();
-    private double[][] zBuffer;
+    private boolean shadowsEnabled = true;
+
+    private final ZBuffer zBuffer = new ZBuffer();
 
     public SimpleRender() {
         this(1280, 720);
@@ -23,27 +28,6 @@ public class SimpleRender extends Render {
 
     public SimpleRender(int width, int height) {
         setSize(new Dimension(width, height));
-        init();
-    }
-
-    @Override
-    public void init() {
-        initZBuffer();
-    }
-
-    private void initZBuffer() {
-        int width = getWidth();
-        int height = getHeight();
-        zBuffer = new double[width][height];
-        clearZBuffer();
-    }
-
-    private void clearZBuffer() {
-        for (int x = 0; x < zBuffer.length; x++) {
-            for (int y = 0; y < zBuffer[0].length; y++) {
-                zBuffer[x][y] = Double.MAX_VALUE;
-            }
-        }
     }
 
     @Override
@@ -59,22 +43,28 @@ public class SimpleRender extends Render {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        if (shadowsEnabled) {
+            for (Light3D light : getLights().values()) {
+                if (light.isCastsShadows()) {
+                    renderShadowMap(light);
+                }
+            }
+        }
+
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(new Color(87, 87, 87));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        clearZBuffer();
+        zBuffer.clearZBuffer();
 
-        for (Object3D obj : space.values()) {
+        for (Object3D obj : getObjects().values()) {
             if (!(obj instanceof Light3D)) {
                 for (Polygon3D polygon : obj.getPolygons())
                     renderPolygon(g2d, polygon);
             }
         }
-        for (Object3D obj : space.values()) {
-            if (obj instanceof Light3D) {
-                renderLight(g2d, (Light3D) obj);
-            }
+        for (Light3D obj : getLights().values()) {
+            renderLight(g2d, obj);
         }
 
         paintLines(g2d);
@@ -89,12 +79,12 @@ public class SimpleRender extends Render {
             Point2D.Double p = projectPoint(point);
             if (!isVisiblePoint(p)) continue;
 
-            double depth = getPointDepth(point);
+            double depth = BufferHelper.getPointDepth(point, this.camera);
             int x = (int) p.x;
             int y = (int) p.y;
 
-            if (x >= 0 && x < getWidth() && y >= 0 && y < getHeight() && depth < zBuffer[x][y]) {
-                zBuffer[x][y] = depth;
+            if (isVisiblePoint(x, y, depth)) {
+                zBuffer.setDepth(x, y, depth);
                 g2d.setColor(color);
                 g2d.fillOval(x, y, 3, 3);
             }
@@ -106,14 +96,7 @@ public class SimpleRender extends Render {
         for (Map.Entry<Edge3D, Color> entry : rendererLines.entrySet()) {
             Edge3D edge = entry.getKey();
             Color color = entry.getValue();
-
-            // Проверяем видимость обеих точек отрезка
-            Point2D.Double p1 = projectPoint(edge.getP1());
-            Point2D.Double p2 = projectPoint(edge.getP2());
-
-            if (isVisiblePoint(p1) || isVisiblePoint(p2)) {
-                drawLine3D(g2d, edge.getP1(), edge.getP2(), color);
-            }
+            drawLine3D(g2d, edge.getP1(), edge.getP2(), color);
         }
         rendererLines.clear();
     }
@@ -123,7 +106,7 @@ public class SimpleRender extends Render {
         Point2D.Double p2 = projectPoint(polygon.getP2());
         Point2D.Double p3 = projectPoint(polygon.getP3());
 
-        double angle = getCameraAngle(polygon);
+        double angle = UtilHelper.getCameraAngle(polygon, camera);
 
         if ((angle > 90) && isVisiblePolygon(p1, p2, p3)) {
             Color color = computeColor(polygon);
@@ -133,27 +116,28 @@ public class SimpleRender extends Render {
 
     private void rasterizePolygon(Graphics2D g2d, Point2D.Double p1, Point2D.Double p2, Point2D.Double p3,
                                   Polygon3D polygon, Color color) {
+
         int minX = (int) Math.max(0, Math.min(Math.min(p1.x, p2.x), p3.x));
         int maxX = (int) Math.min(getWidth() - 1, Math.max(Math.max(p1.x, p2.x), p3.x));
         int minY = (int) Math.max(0, Math.min(Math.min(p1.y, p2.y), p3.y));
         int maxY = (int) Math.min(getHeight() - 1, Math.max(Math.max(p1.y, p2.y), p3.y));
 
-        double area = edgeFunction(p1, p2, p3);
-        if (Math.abs(area) < 1e-10) return; // Избегаем деления на ноль
+        double area = BufferHelper.edgeFunction(p1, p2, p3);
+        if (Math.abs(area) < 1e-10) return;
 
         for (int y = minY; y <= maxY; y++) {
             for (int x = minX; x <= maxX; x++) {
                 Point2D.Double p = new Point2D.Double(x, y);
 
-                double w1 = edgeFunction(p2, p3, p) / area;
-                double w2 = edgeFunction(p3, p1, p) / area;
-                double w3 = edgeFunction(p1, p2, p) / area;
+                double w1 = BufferHelper.edgeFunction(p2, p3, p) / area;
+                double w2 = BufferHelper.edgeFunction(p3, p1, p) / area;
+                double w3 = BufferHelper.edgeFunction(p1, p2, p) / area;
 
                 if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
-                    double z = interpolateDepth(polygon, w1, w2, w3);
+                    double z = BufferHelper.interpolateDepth(polygon, this.camera, w1, w2, w3);
 
-                    if (z < zBuffer[x][y]) {
-                        zBuffer[x][y] = z;
+                    if (z < zBuffer.getDepth(x, y)) {
+                        zBuffer.setDepth(x, y, z);
                         g2d.setColor(color);
                         g2d.fillRect(x, y, 1, 1);
                     }
@@ -162,25 +146,11 @@ public class SimpleRender extends Render {
         }
     }
 
-    private double edgeFunction(Point2D.Double a, Point2D.Double b, Point2D.Double c) {
-        return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
-    }
-
-    private double interpolateDepth(Polygon3D polygon, double w1, double w2, double w3) {
-        double z1 = getPointDepth(polygon.getP1());
-        double z2 = getPointDepth(polygon.getP2());
-        double z3 = getPointDepth(polygon.getP3());
-        return w1 * z1 + w2 * z2 + w3 * z3;
-    }
-
-    private double getPointDepth(Point3D point) {
-        Point3D cameraPoint = camera.getPoint();
-        Vector3D cameraZ = UtilHelper.getNormalVector(camera.getVectorZ());
-        Vector3D viewVector = new Vector3D(cameraPoint, point);
-        return viewVector.dot(cameraZ);
-    }
-
     private Point2D.Double projectPoint(Point3D point) {
+        return projectPoint(point, this.camera, getWidth(), getHeight());
+    }
+
+    private Point2D.Double projectPoint(Point3D point, Camera3D camera, int width, int height) {
         Point3D cameraPoint = camera.getPoint();
         Vector3D cameraZ = UtilHelper.getNormalVector(camera.getVectorZ());
         Vector3D cameraX = UtilHelper.getNormalVector(camera.getVectorX());
@@ -196,19 +166,12 @@ public class SimpleRender extends Render {
         if (zCam <= 0) return new Point2D.Double(-1, -1);
 
         double factor = distance / zCam;
-        double x = xCam * factor + getWidth() / 2;
-        double y = getHeight() / 2 - yCam * factor;
+        double x = xCam * factor + width / 2;
+        double y = height / 2 - yCam * factor;
 
         return new Point2D.Double(x, y);
     }
 
-    private double getCameraAngle(Polygon3D polygon) {
-        Vector3D polygonNormal = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
-        Point3D cameraPoint = camera.getPoint();
-        Point3D centerPolygon = UtilHelper.getCenterPolygon(polygon);
-        Vector3D toCamera = new Vector3D(centerPolygon, cameraPoint);
-        return UtilHelper.getAngle(polygonNormal, toCamera);
-    }
 
     private boolean isVisiblePolygon(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3) {
         return isVisiblePoint(p1) || isVisiblePoint(p2) || isVisiblePoint(p3);
@@ -220,11 +183,24 @@ public class SimpleRender extends Render {
         return p.x <= width && p.x >= 0 && p.y <= height && p.y >= 0;
     }
 
+    private boolean isVisiblePoint(int x, int y, double depth) {
+        return x > 0 && x < getWidth() && y > 0 && y < getHeight() && depth < zBuffer.getDepth(x, y);
+    }
+
     private Color computeColor(Polygon3D polygon) {
         double intensity = 0;
-        for (Light3D l : lights.values()) {
-            double distance = UtilHelper.getLength(UtilHelper.getCenterPolygon(polygon), l.getPoint()) / 100;
-            intensity += computeIntensityLight(polygon, l) / distance;
+        Point3D center = UtilHelper.getCenterPolygon(polygon);
+
+        for (Light3D l : getLights().values()) {
+            double distance = UtilHelper.getLength(center, l.getPoint()) / 100;
+            double lightIntensity = computeIntensityLight(polygon, l);
+
+            // Проверка нахождения в тени
+            if (shadowsEnabled && l.isCastsShadows() && isInShadow(center, l)) {
+                lightIntensity *= 0.2; // Ослабление света в тени
+            }
+
+            intensity += lightIntensity / distance;
         }
         if (intensity > 255) intensity = 255;
         if (intensity < 20) intensity = 20;
@@ -237,12 +213,36 @@ public class SimpleRender extends Render {
         return new Color((int) (red * intensity), (int) (green * intensity), (int) (blue * intensity), color.getAlpha());
     }
 
+    private boolean isInShadow(Point3D point, Light3D light) {
+        ShadowMap shadowMap = light.getShadowMap();
+        if (shadowMap == null) return false;
+
+        Camera3D lightCamera = createLightCamera(light);
+        int resolution = shadowMap.getResolution();
+        Point2D.Double shadowCoords = projectPoint(point, lightCamera, resolution, resolution);
+
+        int x = (int) shadowCoords.x;
+        int y = (int) shadowCoords.y;
+
+        if (x < 0 || x >= shadowMap.getResolution() ||
+                y < 0 || y >= shadowMap.getResolution()) {
+            return true;
+        }
+
+        double pointDepth = BufferHelper.getPointDepth(point, lightCamera);
+        double shadowDepth = shadowMap.getDepth(x, y);
+
+        // Bias для борьбы с самозатенением
+        double bias = 0.1;
+        return pointDepth > shadowDepth + bias;
+    }
+
     private double computeIntensityLight(Polygon3D polygon, Light3D light) {
         Point3D pCenter = UtilHelper.getCenterPolygon(polygon);
         Vector3D pn = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
         Vector3D l = new Vector3D(light.getPoint(), pCenter);
         double angle = UtilHelper.getAngleRad(pn, l);
-        return Math.max(lights.size() * 10, Math.cos(angle) * light.getIntensity());
+        return Math.max(getLights().size() * 10, Math.cos(angle) * light.getIntensity());
     }
 
     private void renderLight(Graphics2D g2d, Light3D light) {
@@ -250,7 +250,7 @@ public class SimpleRender extends Render {
         Point2D.Double center = projectPoint(point);
         if (!isVisiblePoint(center)) return;
 
-        double centerDepth = getPointDepth(point);
+        double centerDepth = BufferHelper.getPointDepth(point, this.camera);
         int xCenter = (int) center.x;
         int yCenter = (int) center.y;
 
@@ -264,22 +264,17 @@ public class SimpleRender extends Render {
             int x2 = xCenter + (int) (Math.cos(Math.toRadians(i)) * r);
             int y2 = yCenter + (int) (Math.sin(Math.toRadians(i)) * r);
 
-            drawLine2D(g2d, xCenter, yCenter, x2, y2, centerDepth);
+            drawLine2D(g2d, Color.WHITE, xCenter, yCenter, x2, y2, centerDepth);
         }
+
         Point3D dottedEnd = new Point3D(point.getX(), 0, point.getZ());
         Color dottedColor = new Color(27, 27, 27);
         drawDottedLine3D(g2d, point, dottedEnd, dottedColor, 20);
-
-        Point3D d1 = new Point3D(dottedEnd.getX() - 10, dottedEnd.getY() - 10, dottedEnd.getZ());
-        Point3D d2 = new Point3D(dottedEnd.getX() + 10, dottedEnd.getY() + 10, dottedEnd.getZ());
-        Point3D d3 = new Point3D(dottedEnd.getX() - 10, dottedEnd.getY() + 10, dottedEnd.getZ());
-        Point3D d4 = new Point3D(dottedEnd.getX() + 10, dottedEnd.getY() - 10, dottedEnd.getZ());
-
-        drawLine3D(g2d, d1, d2, dottedColor);
-        drawLine3D(g2d, d3, d4, dottedColor);
+        double crossSize = (double) getHeight() / 100;
+        drawCross2D(g2d, dottedEnd, camera.getVectorZ(), dottedColor, crossSize);
     }
 
-    private void drawLine2D(Graphics2D g2d, int x1, int y1, int x2, int y2, double depth) {
+    private void drawLine2D(Graphics2D g2d, Color color, int x1, int y1, int x2, int y2, double depth) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
         int sx = (x1 < x2) ? 1 : -1;
@@ -290,11 +285,12 @@ public class SimpleRender extends Render {
         int currentX = x1;
         int currentY = y1;
 
+        g2d.setColor(color);
         while (true) {
             if (currentX >= 0 && currentX < getWidth() && currentY >= 0 && currentY < getHeight()) {
-                if (depth < zBuffer[currentX][currentY]) {
+                if (depth < zBuffer.getDepth(currentX, currentY)) {
                     g2d.drawLine(currentX, currentY, currentX, currentY);
-                    zBuffer[currentX][currentY] = depth;
+                    zBuffer.setDepth(currentX, currentY, depth);
                 }
             }
 
@@ -315,8 +311,8 @@ public class SimpleRender extends Render {
         Point2D.Double p1 = projectPoint(point1);
         Point2D.Double p2 = projectPoint(point2);
 
-        double depthStart = getPointDepth(point1);
-        double depthEnd = getPointDepth(point2);
+        double depthStart = BufferHelper.getPointDepth(point1, this.camera);
+        double depthEnd = BufferHelper.getPointDepth(point2, this.camera);
 
         int x1 = (int) p1.x;
         int y1 = (int) p1.y;
@@ -328,10 +324,10 @@ public class SimpleRender extends Render {
         int steps = Math.max(dx, dy);
 
         if (steps == 0) {
-            if (x1 >= 0 && x1 < getWidth() && y1 >= 0 && y1 < getHeight() && depthStart < zBuffer[x1][y1]) {
+            if (x1 >= 0 && x1 < getWidth() && y1 >= 0 && y1 < getHeight() && depthStart < zBuffer.getDepth(x1, y1)) {
                 g2d.setColor(color);
                 g2d.fillRect(x1, y1, 1, 1);
-                zBuffer[x1][y1] = depthStart;
+                zBuffer.setDepth(x1, y1, depthStart);
             }
             return;
         }
@@ -349,9 +345,9 @@ public class SimpleRender extends Render {
             int ix = (int) Math.round(x);
             int iy = (int) Math.round(y);
 
-            if (ix >= 0 && ix < getWidth() && iy >= 0 && iy < getHeight() && currentDepth < zBuffer[ix][iy]) {
+            if (ix >= 0 && ix < getWidth() && iy >= 0 && iy < getHeight() && currentDepth < zBuffer.getDepth(ix, iy)) {
                 g2d.fillRect(ix, iy, 1, 1);
-                zBuffer[ix][iy] = currentDepth;
+                zBuffer.setDepth(ix, iy, currentDepth);
             }
 
             x += xStep;
@@ -379,5 +375,109 @@ public class SimpleRender extends Render {
             p1.translate(vector);
         }
         drawLine3D(g2d, p1, p2, color);
+    }
+
+    private void drawCross2D(Graphics2D g2d, Point3D p, Vector3D z, Color color, double size) {
+        Point2D.Double p0 = projectPoint(p);
+        double depth = BufferHelper.getPointDepth(p, this.camera);
+
+        drawLine2D(g2d, color,
+                (int) (p0.x - size), (int) (p0.y - size),
+                (int) (p0.x + size), (int) (p0.y + size),
+                depth);
+
+        drawLine2D(g2d, color,
+                (int) (p0.x - size), (int) (p0.y + size),
+                (int) (p0.x + size), (int) (p0.y - size),
+                depth);
+    }
+
+    private void drawCross3D(Graphics2D g2d, Point3D p, Vector3D z, Color color, double size) {
+        Vector3D x = new Vector3D(0, 0, 0);
+        UtilHelper.computeVectorX(x, z);
+        Vector3D y = new Vector3D(0, 0, 0);
+        UtilHelper.computeVectorY(x, y, z);
+
+        x = UtilHelper.changeLenVector(x, size);
+        Vector3D x1 = new Vector3D(-x.getEnd().getX(), x.getEnd().getY(), x.getEnd().getZ());
+
+        y = UtilHelper.changeLenVector(y, size);
+        Vector3D y1 = new Vector3D(y.getEnd().getX(), -y.getEnd().getY(), y.getEnd().getZ());
+
+        Point3D p1 = new Point3D(p);
+        p1.translate(x);
+        p1.translate(y);
+
+        Point3D p2 = new Point3D(p);
+        p2.translate(x1);
+        p2.translate(y1);
+
+        Point3D p3 = new Point3D(p);
+        p3.translate(x);
+        p3.translate(y1);
+
+        Point3D p4 = new Point3D(p);
+        p4.translate(x1);
+        p4.translate(y);
+
+        drawLine3D(g2d, p1, p2, color);
+        drawLine3D(g2d, p3, p4, color);
+    }
+
+    private void renderShadowMap(Light3D light) {
+        ShadowMap shadowMap = light.getShadowMap();
+        if (shadowMap == null) return;
+
+        shadowMap.clearZBuffer();
+        Camera3D lightCamera = createLightCamera(light);
+
+        for (Object3D obj : getObjects().values()) {
+            if (obj instanceof Light3D) continue;
+            for (Polygon3D polygon : obj.getPolygons()) {
+                renderPolygonToShadowMap(polygon, lightCamera, shadowMap);
+            }
+        }
+    }
+
+    private Camera3D createLightCamera(Light3D light) {
+        Point3D lightPos = light.getPoint();
+        Vector3D lightDir = light.getVector();
+        Camera3D lightCamera = new Camera3D(lightPos, lightDir);
+        lightCamera.setViewingAngleRad(Math.toRadians(90));
+        return lightCamera;
+    }
+
+    private void renderPolygonToShadowMap(Polygon3D polygon, Camera3D lightCamera, ShadowMap shadowMap) {
+        int resolution = shadowMap.getResolution();
+        Point2D.Double p1 = projectPoint(polygon.getP1(), lightCamera, resolution, resolution);
+        Point2D.Double p2 = projectPoint(polygon.getP2(), lightCamera, resolution, resolution);
+        Point2D.Double p3 = projectPoint(polygon.getP3(), lightCamera, resolution, resolution);
+
+        if (!isVisiblePolygon(p1, p2, p3)) return;
+
+        int minX = (int) Math.max(0, Math.min(Math.min(p1.x, p2.x), p3.x));
+        int maxX = (int) Math.min(shadowMap.getResolution() - 1, Math.max(Math.max(p1.x, p2.x), p3.x));
+        int minY = (int) Math.max(0, Math.min(Math.min(p1.y, p2.y), p3.y));
+        int maxY = (int) Math.min(shadowMap.getResolution() - 1, Math.max(Math.max(p1.y, p2.y), p3.y));
+
+        double area = BufferHelper.edgeFunction(p1, p2, p3);
+        if (Math.abs(area) < 1e-10) return;
+
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
+                Point2D.Double p = new Point2D.Double(x, y);
+
+                double w1 = BufferHelper.edgeFunction(p2, p3, p) / area;
+                double w2 = BufferHelper.edgeFunction(p3, p1, p) / area;
+                double w3 = BufferHelper.edgeFunction(p1, p2, p) / area;
+
+                if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
+                    double depth = BufferHelper.interpolateDepth(polygon, lightCamera, w1, w2, w3);
+                    if (depth < shadowMap.getDepth(x, y)) {
+                        shadowMap.setDepth(x, y, depth);
+                    }
+                }
+            }
+        }
     }
 }

@@ -85,8 +85,4 @@ public class Cube extends Object3D {
 
         return List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
     }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
 }
