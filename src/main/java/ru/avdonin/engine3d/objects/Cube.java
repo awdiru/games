@@ -4,21 +4,28 @@ import ru.avdonin.engine3d.util.Object3D;
 import ru.avdonin.engine3d.util.Point3D;
 import ru.avdonin.engine3d.util.Polygon3D;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Set;
 
 public class Cube extends Object3D {
 
     public Cube(Point3D p, double size) {
-        point.move(p);
+        this(p, size, Color.WHITE);
+    }
+    public Cube(Point3D p, double size, Color color) {
+        this.point.move(p);
+        this.color = color;
         initPolygons(size);
     }
     /*
-        p6______p7
-        |   p2_______p3
-        |   |   |    |
-        p5__|___p8   |
-            p1_______p4
+        p6__________p7
+        | \         | \
+        |  p2__________p3
+        |  |        |  |
+        p5_|________p8 |
+         \ |         \ |
+           p1__________p2
     */
 
     private void initPolygons(double size) {
@@ -44,7 +51,10 @@ public class Cube extends Object3D {
 
         Set<Polygon3D> polygons = Set.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);
 
-        for (Polygon3D pol : polygons) addPolygon(pol);
+        for (Polygon3D pol : polygons) {
+            pol.setParent(this);
+            addPolygon(pol);
+        }
     }
 
 
@@ -75,6 +85,12 @@ public class Cube extends Object3D {
         Point3D p8 = new Point3D(p7);
         p8.move(p7.getX(), p7.getY() - size, p7.getZ());
 
-        return List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
+        List<Point3D> points = List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
+        this.points.addAll(points);
+        return points;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }

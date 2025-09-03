@@ -1,5 +1,6 @@
 package ru.avdonin.engine3d.helpers;
 
+import ru.avdonin.engine3d.util.Edge3D;
 import ru.avdonin.engine3d.util.Point3D;
 import ru.avdonin.engine3d.util.Polygon3D;
 import ru.avdonin.engine3d.util.Vector3D;
@@ -29,7 +30,7 @@ public class UtilHelper {
         double ny = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
         double nz = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
 
-        return getNormalVector(new Vector3D(nx, ny, nz));
+        return new Vector3D(nx, ny, nz);
     }
 
     public static Vector3D getNormal(Polygon3D p) {
@@ -73,6 +74,21 @@ public class UtilHelper {
         return new Vector3D(xe, ye, ze);
     }
 
+    public static Vector3D changeLenVector(Vector3D vector, double newLength) {
+        Point3D d = vector.getDelta();
+
+        double length = vector.getLength();
+
+        if (length < 1e-10)
+            return new Vector3D(vector.getStart(), vector.getEnd());
+
+        double xe = (d.getX() / length) * newLength;
+        double ye = (d.getY() / length) * newLength;
+        double ze = (d.getZ() / length) * newLength;
+
+        return new Vector3D(vector.getStart(), new Point3D(xe, ye, ze));
+    }
+
     public static Point3D getCenterPolygon(Polygon3D p) {
         Point3D p1 = p.getP1();
         Point3D p2 = p.getP2();
@@ -84,4 +100,58 @@ public class UtilHelper {
 
         return new Point3D(x, y, z);
     }
+
+    public static Point3D calculateCollision(Polygon3D polygon, Edge3D edge) {
+        Point3D p1 = polygon.getP1();
+        Point3D p2 = polygon.getP2();
+        Point3D p3 = polygon.getP3();
+
+        Point3D e1 = edge.getP1();
+        Point3D e2 = edge.getP2();
+
+        Vector3D normal = UtilHelper.getNormal(polygon);
+
+        double a = normal.getEnd().getX();
+        double b = normal.getEnd().getY();
+        double c = normal.getEnd().getZ();
+        double d = -(a * p1.getX() + b * p1.getY() + c * p1.getZ());
+
+        double dx = e2.getX() - e1.getX();
+        double dy = e2.getY() - e1.getY();
+        double dz = e2.getZ() - e1.getZ();
+
+        double denominator = (a * dx + b * dy + c * dz);
+
+        if (Math.abs(denominator) < 1e-10) return null;
+
+        double numerator = -(a * e1.getX() + b * e1.getY() + c * e1.getZ() + d);
+        double t = numerator / denominator;
+
+        if (t < 0 || t > 1) return null;
+
+        double xp = e1.getX() + (t * dx);
+        double yp = e1.getY() + (t * dy);
+        double zp = e1.getZ() + (t * dz);
+
+        Point3D intersectionPoint = new Point3D(xp, yp, zp);
+
+        Vector3D v0 = new Vector3D(p2.getX() - p1.getX(), p2.getY() - p1.getY(), p2.getZ() - p1.getZ());
+        Vector3D v1 = new Vector3D(p3.getX() - p1.getX(), p3.getY() - p1.getY(), p3.getZ() - p1.getZ());
+        Vector3D v2 = new Vector3D(intersectionPoint.getX() - p1.getX(),
+                intersectionPoint.getY() - p1.getY(),
+                intersectionPoint.getZ() - p1.getZ());
+
+        double dot00 = v0.dot(v0);
+        double dot01 = v0.dot(v1);
+        double dot02 = v0.dot(v2);
+        double dot11 = v1.dot(v1);
+        double dot12 = v1.dot(v2);
+
+        double invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+        double u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+        double v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+        return (u >= 0) && (v >= 0) && (u + v <= 1) ? intersectionPoint : null;
+    }
+
 }

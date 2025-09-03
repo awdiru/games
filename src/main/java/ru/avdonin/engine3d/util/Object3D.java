@@ -3,33 +3,38 @@ package ru.avdonin.engine3d.util;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.awt.*;
 import java.util.*;
 
 @Getter
 @Setter
-public class Object3D {
+public abstract class Object3D {
     protected final Set<Polygon3D> polygons = new HashSet<>();
     protected final Point3D point = new Point3D();
     protected final Set<Point3D> points = new HashSet<>(Set.of(point));
+    protected Color color;
 
     public Object3D() {
+        this.color = Color.WHITE;
     }
 
     public Object3D(Object3D o) {
         this(o.getPolygons());
     }
 
-    public Object3D(Polygon3D... polygons) {
+    public Object3D(Set<Polygon3D> polygons) {
+        this.polygons.addAll(polygons);
+        this.color = Color.WHITE;
+    }
+
+    public Object3D(Color color, Polygon3D... polygons) {
+        this.color = color;
         this.polygons.addAll(Arrays.asList(polygons));
         for (Polygon3D p: this.polygons) {
             this.points.add(p.getP1());
             this.points.add(p.getP2());
             this.points.add(p.getP3());
         }
-    }
-
-    public Object3D(Set<Polygon3D> polygons) {
-        this.polygons.addAll(polygons);
     }
 
     public void move(Point3D p) {

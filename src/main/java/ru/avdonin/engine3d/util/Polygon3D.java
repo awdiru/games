@@ -3,6 +3,8 @@ package ru.avdonin.engine3d.util;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.awt.*;
+
 @Getter
 @Setter
 public class Polygon3D {
@@ -13,6 +15,10 @@ public class Polygon3D {
     private final Edge3D edge1;
     private final Edge3D edge2;
     private final Edge3D edge3;
+
+    private boolean isReflection = false;
+
+    private Object3D parent;
 
     public Polygon3D() {
         this(new Point3D(), new Point3D(), new Point3D());
@@ -66,5 +72,9 @@ public class Polygon3D {
 
     public void rotation(Point3D point, Vector3D normal, double angle) {
         rotationRad(point, normal, Math.toRadians(angle));
+    }
+
+    public Color getColor() {
+        return parent.getColor();
     }
 }
