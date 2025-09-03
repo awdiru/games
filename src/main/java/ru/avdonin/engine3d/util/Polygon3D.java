@@ -7,10 +7,10 @@ import java.awt.*;
 
 @Getter
 @Setter
-public class Polygon3D {
-    private final Point3D p1;
-    private final Point3D p2;
-    private final Point3D p3;
+public class Polygon3D implements Saved {
+    private Point3D p1;
+    private Point3D p2;
+    private Point3D p3;
 
     private final Edge3D edge1;
     private final Edge3D edge2;
@@ -76,5 +76,43 @@ public class Polygon3D {
 
     public Color getColor() {
         return parent.getColor();
+    }
+
+    @Override
+    public String getString() {
+        return "[" + p1.getString() + " " + p2.getString() + " " + p3.getString() + " " + isReflection + "]";
+    }
+
+    @Override
+    public void setValue(String key, String value) {
+        switch (key) {
+            case "p1" -> p1.writeObject(value);
+            case "p2" -> p2.writeObject(value);
+            case "p3" -> p3.writeObject(value);
+            case "isReflection" -> isReflection = Boolean.parseBoolean(value);
+            default -> throw new RuntimeException("Некорректное название переменной");
+        }
+    }
+
+    @Override
+    public void writeObject(String obj) {
+        if (!obj.startsWith("[") || !obj.endsWith("]"))
+            throw new RuntimeException("Некорректная запись");
+
+        String str = obj.substring(1, obj.length() - 1);
+
+        String p1 = Saved.getStr(str, "(", ")");
+        setValue("p1", p1);
+        str = Saved.offsetStr(str, "(");
+
+        String p2 = Saved.getStr(str, "(", ")");
+        setValue("p2", p2);
+        str = Saved.offsetStr(str, "(");
+
+        String p3 = Saved.getStr(str, "(", ")");
+        setValue("p3", p3);
+        str = str.substring(str.lastIndexOf(" ") + 1);
+
+        setValue("isReflection", str);
     }
 }

@@ -25,6 +25,7 @@ public class SimpleRender extends Render {
     }
 
     public SimpleRender(int width, int height) {
+        super();
         setSize(new Dimension(width, height));
     }
 

@@ -1,12 +1,11 @@
 package ru.avdonin.engine3d.util;
 
-import jdk.jshell.execution.Util;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
 
 @Getter
-public class Camera3D {
+public class Camera3D extends Object3D {
     private final Vector3D vectorX = new Vector3D(0, 0, 0);
     private final Vector3D vectorY = new Vector3D(0, 0, 0);
     private final Vector3D vectorZ = new Vector3D(0, 0, 0);
@@ -29,14 +28,17 @@ public class Camera3D {
         computeVectorY();
     }
 
+    @Override
     public void move(Point3D p) {
         this.point.move(p);
     }
 
+    @Override
     public void translate(Vector3D v) {
         this.point.translate(v);
     }
 
+    @Override
     public void rotationRad(Point3D point, Vector3D vector, double angle) {
         this.vectorX.rotationRad(new Point3D(), vector, angle);
         this.vectorY.rotationRad(new Point3D(), vector, angle);
@@ -44,6 +46,7 @@ public class Camera3D {
         this.point.rotationRad(point, vector, angle);
     }
 
+    @Override
     public void rotation(Point3D point, Vector3D vector, double angle) {
         rotationRad(point, vector, Math.toRadians(angle));
     }
@@ -105,5 +108,40 @@ public class Camera3D {
 
     public Point3D getVectorZEnd() {
         return vectorZ.getEnd();
+    }
+
+    @Override
+    public String getString() {
+        return "vectorX=" + vectorX.getString() + "\n" +
+                "vectorY=" + vectorY.getString() + "\n" +
+                "vectorZ=" + vectorZ.getString() + "\n" +
+                "point=" + point.getString() + "\n" +
+                "zoom=" + zoom + "\n" +
+                "viewingAngle=" + viewingAngle;
+    }
+
+    @Override
+    public void setValue(String key, String value) {
+        switch (key) {
+            case "vectorX" -> vectorX.writeObject(value);
+            case "vectorY" -> vectorY.writeObject(value);
+            case "vectorZ" -> vectorZ.writeObject(value);
+            case "point" -> point.writeObject(value);
+            case "zoom" -> zoom = Double.parseDouble(value);
+            case "viewingAngle" -> viewingAngle = Double.parseDouble(value);
+            default -> throw new RuntimeException("Некорректное название переменной");
+        }
+    }
+
+    @Override
+    public void writeObject(String obj) {
+        String[] lines = obj.split("\n");
+        if (lines.length != 6)
+            throw new RuntimeException("Некорректная запись");
+
+        for (String line : lines) {
+            String[] l = line.split("=");
+            setValue(l[0], l[1]);
+        }
     }
 }

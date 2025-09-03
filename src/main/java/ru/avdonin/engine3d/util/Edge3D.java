@@ -6,7 +6,7 @@ import ru.avdonin.engine3d.helpers.UtilHelper;
 
 @Getter
 @Setter
-public class Edge3D {
+public class Edge3D implements Saved {
     protected Point3D p1;
     protected Point3D p2;
     protected double length;
@@ -62,5 +62,34 @@ public class Edge3D {
 
     protected double calculateLength() {
         return UtilHelper.getLength(p1, p2);
+    }
+
+    @Override
+    public String getString() {
+        return "[" + p1.getString() + " " + p2.getString() + "]";
+    }
+
+    @Override
+    public void setValue(String key, String value) {
+        switch (key) {
+            case "p1" -> p1.writeObject(value);
+            case "p2" -> p2.writeObject(value);
+            default -> throw new RuntimeException("Некорректное название переменной");
+        }
+    }
+
+    @Override
+    public void writeObject(String obj) {
+        if(!obj.startsWith("[") || !obj.endsWith("]"))
+            throw new RuntimeException("Некорректная запись");
+
+        String str = obj.substring(1, obj.length() - 1);
+
+        String p1 = Saved.getStr(str, "(", ")");
+        setValue("p1", p1);
+        str = Saved.offsetStr(str, "(");
+
+        String p2 = Saved.getStr(str, "(", ")");
+        setValue("p2", p2);
     }
 }

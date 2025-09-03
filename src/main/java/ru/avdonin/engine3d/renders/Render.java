@@ -14,6 +14,10 @@ public abstract class Render extends JPanel {
     protected final Camera3D camera = new Camera3D(new Vector3D(0, 0, 1));
     protected SceneStorage sceneStorage = new SceneStorage();
 
+    public Render() {
+        sceneStorage.add("camera", camera);
+    }
+
     public void addObject(String name, Object3D o) {
         if (o instanceof Light3D)
             sceneStorage.getLights().put(name, (Light3D) o);

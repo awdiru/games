@@ -55,4 +55,33 @@ public class Light3D extends Object3D {
     public void setAngle(double angle) {
         this.setAngleRad(Math.toRadians(angle));
     }
+
+    @Override
+    public String getString() {
+        return "vector=" + vector.getString() + "\n" +
+                "intensity=" + intensity + "\n" +
+                "angle=" + angle;
+    }
+
+    @Override
+    public void setValue(String key, String value) {
+        switch (key) {
+            case "vector" -> vector.writeObject(value);
+            case "intensity" -> intensity = Integer.parseInt(value);
+            case "angle" -> angle = Double.parseDouble(value);
+            default -> throw new RuntimeException("Некорректное название переменной");
+        }
+    }
+
+    @Override
+    public void writeObject(String obj) {
+        String[] lines = obj.split("\n");
+        if (lines.length != 3)
+            throw new RuntimeException("Некорректная запись");
+
+        for (String line : lines) {
+            String[] l = line.split("=");
+            setValue(l[0], l[1]);
+        }
+    }
 }

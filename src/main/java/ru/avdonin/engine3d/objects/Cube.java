@@ -85,9 +85,7 @@ public class Cube extends Object3D {
         Point3D p8 = new Point3D(p7);
         p8.move(p7.getX(), p7.getY() - size, p7.getZ());
 
-        List<Point3D> points = List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
-        this.points.addAll(points);
-        return points;
+        return List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
     public void setColor(Color color) {

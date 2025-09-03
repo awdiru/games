@@ -33,6 +33,9 @@ public class Main {
             Plane plane = new Plane(p0, 700);
             storage.add("plane", plane);
 
+            Saver saver = new Saver();
+            saver.saveScene( "save", "scene", storage);
+
             new EngineFrame("test", renderPanel, e -> {
                 cube.rotation(c, new Vector3D(0, 1, 0), 1);
                 renderPanel.repaint();

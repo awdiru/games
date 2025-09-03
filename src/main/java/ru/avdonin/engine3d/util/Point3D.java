@@ -2,13 +2,12 @@ package ru.avdonin.engine3d.util;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.UtilHelper;
 
 import java.util.Objects;
 
 @Getter
 @Setter
-public class Point3D {
+public class Point3D implements Saved {
     private double x;
     private double y;
     private double z;
@@ -108,5 +107,36 @@ public class Point3D {
     @Override
     public String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
+    }
+
+    @Override
+    public String getString() {
+        return "(" + x + " " + y + " " + z + ")";
+    }
+
+    @Override
+    public void setValue(String key, String value) {
+        switch (key) {
+            case "x" -> x = Double.parseDouble(value);
+            case "y" -> y = Double.parseDouble(value);
+            case "z" -> z = Double.parseDouble(value);
+            default -> throw new RuntimeException("Некорректное название переменной");
+        }
+    }
+
+    @Override
+    public void writeObject(String obj) {
+        if (!obj.startsWith("(") || !obj.endsWith(")"))
+            throw new RuntimeException("Некорректная запись");
+
+        String str = obj.substring(1, obj.length() - 1);
+        String[] array = str.split(" ");
+
+        if (array.length != 3)
+            throw new RuntimeException("Некорректная запись");
+
+        setValue("x", array[0]);
+        setValue("y", array[1]);
+        setValue("z", array[2]);
     }
 }
