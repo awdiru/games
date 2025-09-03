@@ -2,6 +2,9 @@ package ru.avdonin.engine3d.renders.impl;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.buffer.ZBuffer;
+import ru.avdonin.engine3d.helpers.BufferHelper;
+import ru.avdonin.engine3d.helpers.RenderHelper;
 import ru.avdonin.engine3d.helpers.UtilHelper;
 import ru.avdonin.engine3d.renders.Render;
 import ru.avdonin.engine3d.util.*;
@@ -15,7 +18,7 @@ import java.util.*;
 public class SimpleRender extends Render {
     private final Map<Point3D, Color> rendererPoints = new HashMap<>();
     private final Map<Edge3D, Color> rendererLines = new HashMap<>();
-    private double[][] zBuffer;
+    private final ZBuffer zBuffer = new ZBuffer();
 
     public SimpleRender() {
         this(1280, 720);
@@ -23,27 +26,6 @@ public class SimpleRender extends Render {
 
     public SimpleRender(int width, int height) {
         setSize(new Dimension(width, height));
-        init();
-    }
-
-    @Override
-    public void init() {
-        initZBuffer();
-    }
-
-    private void initZBuffer() {
-        int width = getWidth();
-        int height = getHeight();
-        zBuffer = new double[width][height];
-        clearZBuffer();
-    }
-
-    private void clearZBuffer() {
-        for (int x = 0; x < zBuffer.length; x++) {
-            for (int y = 0; y < zBuffer[0].length; y++) {
-                zBuffer[x][y] = Double.MAX_VALUE;
-            }
-        }
     }
 
     @Override
@@ -63,17 +45,15 @@ public class SimpleRender extends Render {
         g2d.setColor(new Color(87, 87, 87));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        clearZBuffer();
+        zBuffer.clearZBuffer();
 
-        for (Object3D obj : space.values()) {
-            if (!(obj instanceof Light3D)) {
+        for (Object3D obj : sceneStorage.getObjects().values()) {
+            if (obj instanceof Light3D)
+                renderLight(g2d, (Light3D) obj);
+
+            else {
                 for (Polygon3D polygon : obj.getPolygons())
                     renderPolygon(g2d, polygon);
-            }
-        }
-        for (Object3D obj : space.values()) {
-            if (obj instanceof Light3D) {
-                renderLight(g2d, (Light3D) obj);
             }
         }
 
@@ -89,12 +69,12 @@ public class SimpleRender extends Render {
             Point2D.Double p = projectPoint(point);
             if (!isVisiblePoint(p)) continue;
 
-            double depth = getPointDepth(point);
+            double depth = BufferHelper.getPointDepth(point, this.camera);
             int x = (int) p.x;
             int y = (int) p.y;
 
-            if (x >= 0 && x < getWidth() && y >= 0 && y < getHeight() && depth < zBuffer[x][y]) {
-                zBuffer[x][y] = depth;
+            if (x >= 0 && x < getWidth() && y >= 0 && y < getHeight() && depth < zBuffer.getDepth(x, y)) {
+                zBuffer.setDepth(x, y, depth);
                 g2d.setColor(color);
                 g2d.fillOval(x, y, 3, 3);
             }
@@ -126,7 +106,7 @@ public class SimpleRender extends Render {
         double angle = getCameraAngle(polygon);
 
         if ((angle > 90) && isVisiblePolygon(p1, p2, p3)) {
-            Color color = computeColor(polygon);
+            Color color = RenderHelper.computeColor(polygon, sceneStorage);
             rasterizePolygon(g2d, p1, p2, p3, polygon, color);
         }
     }
@@ -150,10 +130,10 @@ public class SimpleRender extends Render {
                 double w3 = edgeFunction(p1, p2, p) / area;
 
                 if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
-                    double z = interpolateDepth(polygon, w1, w2, w3);
+                    double z = BufferHelper.interpolateDepth(polygon, this.camera, w1, w2, w3);
 
-                    if (z < zBuffer[x][y]) {
-                        zBuffer[x][y] = z;
+                    if (z < zBuffer.getDepth(x, y)) {
+                        zBuffer.setDepth(x, y, z);
                         g2d.setColor(color);
                         g2d.fillRect(x, y, 1, 1);
                     }
@@ -166,19 +146,6 @@ public class SimpleRender extends Render {
         return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
     }
 
-    private double interpolateDepth(Polygon3D polygon, double w1, double w2, double w3) {
-        double z1 = getPointDepth(polygon.getP1());
-        double z2 = getPointDepth(polygon.getP2());
-        double z3 = getPointDepth(polygon.getP3());
-        return w1 * z1 + w2 * z2 + w3 * z3;
-    }
-
-    private double getPointDepth(Point3D point) {
-        Point3D cameraPoint = camera.getPoint();
-        Vector3D cameraZ = UtilHelper.getNormalVector(camera.getVectorZ());
-        Vector3D viewVector = new Vector3D(cameraPoint, point);
-        return viewVector.dot(cameraZ);
-    }
 
     private Point2D.Double projectPoint(Point3D point) {
         Point3D cameraPoint = camera.getPoint();
@@ -220,37 +187,14 @@ public class SimpleRender extends Render {
         return p.x <= width && p.x >= 0 && p.y <= height && p.y >= 0;
     }
 
-    private Color computeColor(Polygon3D polygon) {
-        double intensity = 0;
-        for (Light3D l : lights.values()) {
-            double distance = UtilHelper.getLength(UtilHelper.getCenterPolygon(polygon), l.getPoint()) / 100;
-            intensity += computeIntensityLight(polygon, l) / distance;
-        }
-        if (intensity > 255) intensity = 255;
-        if (intensity < 20) intensity = 20;
 
-        Color color = polygon.getColor();
-        double red = (double) color.getRed() / 255;
-        double green = (double) color.getGreen() / 255;
-        double blue = (double) color.getBlue() / 255;
-
-        return new Color((int) (red * intensity), (int) (green * intensity), (int) (blue * intensity), color.getAlpha());
-    }
-
-    private double computeIntensityLight(Polygon3D polygon, Light3D light) {
-        Point3D pCenter = UtilHelper.getCenterPolygon(polygon);
-        Vector3D pn = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
-        Vector3D l = new Vector3D(light.getPoint(), pCenter);
-        double angle = UtilHelper.getAngleRad(pn, l);
-        return Math.max(lights.size() * 10, Math.cos(angle) * light.getIntensity());
-    }
 
     private void renderLight(Graphics2D g2d, Light3D light) {
         Point3D point = light.getPoint();
         Point2D.Double center = projectPoint(point);
         if (!isVisiblePoint(center)) return;
 
-        double centerDepth = getPointDepth(point);
+        double centerDepth = BufferHelper.getPointDepth(point, this.camera);
         int xCenter = (int) center.x;
         int yCenter = (int) center.y;
 
@@ -292,9 +236,9 @@ public class SimpleRender extends Render {
 
         while (true) {
             if (currentX >= 0 && currentX < getWidth() && currentY >= 0 && currentY < getHeight()) {
-                if (depth < zBuffer[currentX][currentY]) {
+                if (depth < zBuffer.getDepth(currentX, currentY)) {
                     g2d.drawLine(currentX, currentY, currentX, currentY);
-                    zBuffer[currentX][currentY] = depth;
+                    zBuffer.setDepth(currentX, currentY, depth);
                 }
             }
 
@@ -315,8 +259,8 @@ public class SimpleRender extends Render {
         Point2D.Double p1 = projectPoint(point1);
         Point2D.Double p2 = projectPoint(point2);
 
-        double depthStart = getPointDepth(point1);
-        double depthEnd = getPointDepth(point2);
+        double depthStart = BufferHelper.getPointDepth(point1, this.camera);
+        double depthEnd = BufferHelper.getPointDepth(point2, this.camera);
 
         int x1 = (int) p1.x;
         int y1 = (int) p1.y;
@@ -328,10 +272,10 @@ public class SimpleRender extends Render {
         int steps = Math.max(dx, dy);
 
         if (steps == 0) {
-            if (x1 >= 0 && x1 < getWidth() && y1 >= 0 && y1 < getHeight() && depthStart < zBuffer[x1][y1]) {
+            if (x1 >= 0 && x1 < getWidth() && y1 >= 0 && y1 < getHeight() && depthStart < zBuffer.getDepth(x1, y1)) {
                 g2d.setColor(color);
                 g2d.fillRect(x1, y1, 1, 1);
-                zBuffer[x1][y1] = depthStart;
+                zBuffer.setDepth(x1, y1, depthStart);
             }
             return;
         }
@@ -349,9 +293,9 @@ public class SimpleRender extends Render {
             int ix = (int) Math.round(x);
             int iy = (int) Math.round(y);
 
-            if (ix >= 0 && ix < getWidth() && iy >= 0 && iy < getHeight() && currentDepth < zBuffer[ix][iy]) {
+            if (ix >= 0 && ix < getWidth() && iy >= 0 && iy < getHeight() && currentDepth < zBuffer.getDepth(ix, iy)) {
                 g2d.fillRect(ix, iy, 1, 1);
-                zBuffer[ix][iy] = currentDepth;
+                zBuffer.setDepth(ix, iy, currentDepth);
             }
 
             x += xStep;
