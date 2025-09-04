@@ -7,7 +7,9 @@ import ru.avdonin.engine3d.helpers.BufferHelper;
 import ru.avdonin.engine3d.helpers.RenderHelper;
 import ru.avdonin.engine3d.helpers.UtilHelper;
 import ru.avdonin.engine3d.renders.Render;
-import ru.avdonin.engine3d.util.*;
+import ru.avdonin.engine3d.storage.SceneStorage;
+import ru.avdonin.engine3d.util.Obj;
+import ru.avdonin.engine3d.util.objects.*;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -16,26 +18,20 @@ import java.util.*;
 @Getter
 @Setter
 public class SimpleRender extends Render {
-    private final Map<Point3D, Color> rendererPoints = new HashMap<>();
-    private final Map<Edge3D, Color> rendererLines = new HashMap<>();
     private final ZBuffer zBuffer = new ZBuffer();
 
     public SimpleRender() {
-        this(1280, 720);
+        this(new SceneStorage(), 1280, 720);
     }
 
-    public SimpleRender(int width, int height) {
+    public SimpleRender(SceneStorage storage) {
+        this(storage, 1280, 720);
+
+    }
+
+    public SimpleRender(SceneStorage storage, int width, int height) {
+        super(storage);
         setSize(new Dimension(width, height));
-    }
-
-    @Override
-    public void renderPoint(Point3D point, Color color) {
-        rendererPoints.put(point, color);
-    }
-
-    @Override
-    public void renderLine(Edge3D edge, Color color) {
-        rendererLines.put(edge, color);
     }
 
     @Override
@@ -47,27 +43,30 @@ public class SimpleRender extends Render {
 
         zBuffer.clearZBuffer();
 
-        for (Object3D obj : sceneStorage.getObjects().values()) {
-            if (obj instanceof Light3D)
-                renderLight(g2d, (Light3D) obj);
-
-            else {
-                for (Polygon3D polygon : obj.getPolygons())
+        for (Map.Entry<String,Obj<?>> entry : sceneStorage.getObjects().entrySet()) {
+            String name = entry.getKey();
+            Obj<?> obj = entry.getValue();
+            if (obj instanceof Light3D o)
+                renderLight(g2d, o);
+            else if (obj instanceof Point3D o)
+                paintPoint(g2d, o);
+            else if (obj instanceof Vector3D o)
+                paintVector(g2d, o);
+            else if (obj instanceof Edge3D o)
+                paintLine(g2d, o);
+            else if (obj instanceof Polygon3D o)
+                renderPolygon(g2d, o);
+            else if (obj instanceof Object3D o)
+                for (Polygon3D polygon : o.getPolygons())
                     renderPolygon(g2d, polygon);
-            }
         }
-
-        paintLines(g2d);
-        paintPoints(g2d);
     }
 
-    private void paintPoints(Graphics2D g2d) {
-        for (Map.Entry<Point3D, Color> entry : rendererPoints.entrySet()) {
-            Point3D point = entry.getKey();
-            Color color = entry.getValue();
+    private void paintPoint(Graphics2D g2d, Point3D point) {
+            Color color = point.getColor();
 
             Point2D.Double p = projectPoint(point);
-            if (!isVisiblePoint(p)) continue;
+            if (!isVisiblePoint(p)) return;
 
             double depth = BufferHelper.getPointDepth(point, this.camera);
             int x = (int) p.x;
@@ -78,24 +77,25 @@ public class SimpleRender extends Render {
                 g2d.setColor(color);
                 g2d.fillOval(x, y, 3, 3);
             }
-        }
-        rendererPoints.clear();
     }
 
-    private void paintLines(Graphics2D g2d) {
-        for (Map.Entry<Edge3D, Color> entry : rendererLines.entrySet()) {
-            Edge3D edge = entry.getKey();
-            Color color = entry.getValue();
+    private void paintLine(Graphics2D g2d, Edge3D edge) {
+        Color color = edge.getColor();
+        drawLine3D(g2d, edge.getP1(), edge.getP2(), color);
+    }
 
-            // Проверяем видимость обеих точек отрезка
-            Point2D.Double p1 = projectPoint(edge.getP1());
-            Point2D.Double p2 = projectPoint(edge.getP2());
+    private void paintVector(Graphics2D g2d, Vector3D vector) {
+        paintLine(g2d, vector);
+        Vector3D s = UtilHelper.changeLenVector(new Vector3D(vector.getEnd(), vector.getStart()), 10);
+        s.setColor(vector.getColor());
 
-            if (isVisiblePoint(p1) || isVisiblePoint(p2)) {
-                drawLine3D(g2d, edge.getP1(), edge.getP2(), color);
-            }
-        }
-        rendererLines.clear();
+        Vector3D s1 = new Vector3D(s);
+        s1.getEnd().translate(new Vector3D(0, 5, 0));
+        Vector3D s2 = new Vector3D(s);
+        s2.getEnd().translate(new Vector3D(0, -5, 0));
+
+        paintLine(g2d, s1);
+        paintLine(g2d, s2);
     }
 
     private void renderPolygon(Graphics2D g2d, Polygon3D polygon) {
@@ -186,7 +186,6 @@ public class SimpleRender extends Render {
         int width = getWidth();
         return p.x <= width && p.x >= 0 && p.y <= height && p.y >= 0;
     }
-
 
 
     private void renderLight(Graphics2D g2d, Light3D light) {

@@ -1,9 +1,9 @@
 package ru.avdonin.engine3d.helpers;
 
-import ru.avdonin.engine3d.util.Edge3D;
-import ru.avdonin.engine3d.util.Point3D;
-import ru.avdonin.engine3d.util.Polygon3D;
-import ru.avdonin.engine3d.util.Vector3D;
+import ru.avdonin.engine3d.util.objects.Edge3D;
+import ru.avdonin.engine3d.util.objects.Point3D;
+import ru.avdonin.engine3d.util.objects.Polygon3D;
+import ru.avdonin.engine3d.util.objects.Vector3D;
 
 public class UtilHelper {
     public static double getLength(Point3D p1, Point3D p2) {
@@ -75,18 +75,24 @@ public class UtilHelper {
     }
 
     public static Vector3D changeLenVector(Vector3D vector, double newLength) {
-        Point3D d = vector.getDelta();
+        double dx = vector.getEnd().getX() - vector.getStart().getX();
+        double dy = vector.getEnd().getY() - vector.getStart().getY();
+        double dz = vector.getEnd().getZ() - vector.getStart().getZ();
+
+        Point3D start = vector.getStart();
 
         double length = vector.getLength();
 
         if (length < 1e-10)
             return new Vector3D(vector.getStart(), vector.getEnd());
 
-        double xe = (d.getX() / length) * newLength;
-        double ye = (d.getY() / length) * newLength;
-        double ze = (d.getZ() / length) * newLength;
+        double xe = (dx / length) * newLength + start.getX();
+        double ye = (dy / length) * newLength + start.getY();
+        double ze = (dz / length) * newLength + start.getZ();
 
-        return new Vector3D(vector.getStart(), new Point3D(xe, ye, ze));
+        Vector3D v = new Vector3D(vector.getStart(), new Point3D(xe, ye, ze));
+        v.setColor(vector.getColor());
+        return v;
     }
 
     public static Point3D getCenterPolygon(Polygon3D p) {

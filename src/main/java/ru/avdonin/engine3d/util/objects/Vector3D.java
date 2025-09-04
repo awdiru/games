@@ -1,6 +1,14 @@
-package ru.avdonin.engine3d.util;
+package ru.avdonin.engine3d.util.objects;
 
 public class Vector3D extends Edge3D {
+    public Vector3D() {
+        this(new Point3D(), new Point3D());
+    }
+
+    public Vector3D(Edge3D vector) {
+        this(new Point3D(vector.getP1()), new Point3D(vector.getP2()));
+        color = vector.getColor();
+    }
 
     public Vector3D(double x, double y, double z) {
         this(new Point3D(x, y, z));

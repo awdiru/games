@@ -1,20 +1,19 @@
-package ru.avdonin.engine3d.objects;
+package ru.avdonin.engine3d.test_objects;
 
-import ru.avdonin.engine3d.util.Object3D;
-import ru.avdonin.engine3d.util.Point3D;
-import ru.avdonin.engine3d.util.Polygon3D;
+import ru.avdonin.engine3d.util.objects.Object3D;
+import ru.avdonin.engine3d.util.objects.Point3D;
+import ru.avdonin.engine3d.util.objects.Polygon3D;
 
 import java.awt.*;
 import java.util.List;
 import java.util.Set;
 
 public class Cube extends Object3D {
-
     public Cube(Point3D p, double size) {
         this(p, size, Color.WHITE);
     }
     public Cube(Point3D p, double size, Color color) {
-        this.point.move(p);
+        this.point = p;
         this.color = color;
         initPolygons(size);
     }
@@ -62,32 +61,30 @@ public class Cube extends Object3D {
         double s = size / 2;
 
         Point3D p1 = new Point3D(point);
-        p1.move(p1.getX() - s, p1.getY() - s, p1.getZ() - s);
+        p1.move(new Point3D(p1.getX() - s, p1.getY() - s, p1.getZ() - s));
 
         Point3D p2 = new Point3D(p1);
-        p2.move(p1.getX(), p1.getY() + size, p1.getZ());
+        p2.move(new Point3D(p1.getX(), p1.getY() + size, p1.getZ()));
 
         Point3D p3 = new Point3D(p2);
-        p3.move(p2.getX() + size, p2.getY(), p2.getZ());
+        p3.move(new Point3D(p2.getX() + size, p2.getY(), p2.getZ()));
 
         Point3D p4 = new Point3D(p3);
-        p4.move(p3.getX(), p3.getY() - size, p3.getZ());
+        p4.move(new Point3D(p3.getX(), p3.getY() - size, p3.getZ()));
 
         Point3D p5 = new Point3D(p1);
-        p5.move(p1.getX(), p1.getY(), p1.getZ() + size);
+        p5.move(new Point3D(p1.getX(), p1.getY(), p1.getZ() + size));
 
         Point3D p6 = new Point3D(p5);
-        p6.move(p5.getX(), p5.getY() + size, p5.getZ());
+        p6.move(new Point3D(p5.getX(), p5.getY() + size, p5.getZ()));
 
         Point3D p7 = new Point3D(p6);
-        p7.move(p6.getX() + size, p6.getY(), p6.getZ());
+        p7.move(new Point3D(p6.getX() + size, p6.getY(), p6.getZ()));
 
         Point3D p8 = new Point3D(p7);
-        p8.move(p7.getX(), p7.getY() - size, p7.getZ());
+        p8.move(new Point3D(p7.getX(), p7.getY() - size, p7.getZ()));
 
-        List<Point3D> points = List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
-        this.points.addAll(points);
-        return points;
+        return List.of(point, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
     public void setColor(Color color) {
