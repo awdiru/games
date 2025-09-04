@@ -1,11 +1,12 @@
 package ru.avdonin.engine3d;
 
-import ru.avdonin.engine3d.test_objects.Cube;
-import ru.avdonin.engine3d.test_objects.Plane;
-import ru.avdonin.engine3d.renders.impl.SimpleRender;
-import ru.avdonin.engine3d.saver.Saver;
+import ru.avdonin.engine3d.rendering_panel.test_objects.Cube;
+import ru.avdonin.engine3d.rendering_panel.test_objects.House;
+import ru.avdonin.engine3d.rendering_panel.test_objects.Plane;
+import ru.avdonin.engine3d.rendering_panel.renders.impl.SimpleRender;
+import ru.avdonin.engine3d.rendering_panel.saver.Saver;
 import ru.avdonin.engine3d.storage.SceneStorage;
-import ru.avdonin.engine3d.util.objects.*;
+import ru.avdonin.engine3d.rendering_panel.util.objects.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,12 +14,13 @@ import java.awt.*;
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            SimpleRender renderPanel = new SimpleRender(new SceneStorage(), 600, 400);
-            SceneStorage storage = renderPanel.getSceneStorage();
+            SimpleRender renderPanel = new SimpleRender(600, 600);
+            SceneStorage storage = renderPanel.getStorage();
 
             Point3D p0 = new Point3D();
-            Point3D l = new Point3D(250, 250, 0);
-            Point3D c = new Point3D(0, 60, 0);
+            Point3D l = new Point3D(150, 250, -100);
+            Point3D c = new Point3D(-100, 60, 0);
+            Point3D h = new Point3D(100, 60, 0);
             Point3D cam = new Point3D(0, 0, -400);
 
             Camera3D camera = renderPanel.getCamera();
@@ -28,7 +30,10 @@ public class Main {
             Light3D light = new Light3D(l, 500);
             storage.add("light", light);
 
-            Cube cube = new Cube(c, 100, new Color(70, 255, 210));
+            Object3D house = new House(h, 100, new Color(70, 255, 210));
+            storage.add("house", house);
+
+            Object3D cube = new Cube(c, 100, new Color(39, 204, 10));
             storage.add("cube", cube);
 
             Plane plane = new Plane(p0, 700);
@@ -50,8 +55,9 @@ public class Main {
             Saver saver = new Saver();
             saver.saveScene( "save", "scene", storage);
 
+            storage.setSelectedObject(cube);
+
             new EngineFrame("test", renderPanel, e -> {
-                cube.rotation(c, new Vector3D(0, 1, 0), 1);
                 renderPanel.repaint();
             });
         });
