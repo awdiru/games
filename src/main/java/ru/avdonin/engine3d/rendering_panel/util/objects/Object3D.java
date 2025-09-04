@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -60,6 +61,11 @@ public class Object3D implements Obj<Object3D> {
     public void rotationRad(Point3D point, Vector3D normal, double angle) {
         for (Point3D p : points)
             p.rotationRad(point, normal, angle);
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
+        return null;
     }
 
     protected void addPolygon(Polygon3D pol) {

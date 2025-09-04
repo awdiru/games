@@ -2,10 +2,13 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.helpers.UtilHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
+import javax.swing.*;
 import java.awt.*;
 
 @Getter
@@ -62,6 +65,42 @@ public class Edge3D implements Obj<Edge3D> {
         if (parent == null)
             return color;
         return parent.getColor();
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
+        JFrame frame = Obj.super.getCreateFrame();
+        frame.setTitle("New Edge");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        CoordsPane coord1 = new CoordsPane();
+        CoordsPane coord2 = new CoordsPane();
+        ColorsPane color = new ColorsPane();
+
+        JButton button = new JButton("->");
+        button.addActionListener(e -> {
+            p1.move(getPoint(coord1));
+            p2.move(getPoint(coord2));
+            setColor(getColor(color));
+            calculateLength();
+            saveObject("edge");
+            frame.dispose();
+        });
+
+        panel.add(new JLabel("start"));
+        panel.add(coord1);
+        panel.add(new JLabel("end"));
+        panel.add(coord2);
+        panel.add(new JLabel("color"));
+        panel.add(color);
+        panel.add(button);
+
+        JScrollPane scroll = new JScrollPane(panel);
+        frame.add(scroll);
+
+        return frame;
     }
 
     protected double calculateLength() {

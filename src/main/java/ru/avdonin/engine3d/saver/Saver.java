@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.rendering_panel.saver;
+package ru.avdonin.engine3d.saver;
 
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
@@ -17,7 +17,7 @@ public class Saver {
     private final static String OBJ_FILE_EXTENSION = ".objc";
     private final static String SCENE_FILE_EXTENSION = ".scn";
 
-    public void openScene(String path) {
+    public static void openScene(String path) {
         SceneStorage storage = getStorage();
         Path filePath = Path.of(path);
         if (!Files.exists(filePath))
@@ -36,7 +36,7 @@ public class Saver {
         }
     }
 
-    public void openObject(String path, SceneStorage storage) throws IOException {
+    public static void openObject(String path, SceneStorage storage) throws IOException {
         List<String> lines = Files.readAllLines(Path.of(path));
         Obj<?> obj = getObj(lines.getFirst());
 
@@ -48,7 +48,7 @@ public class Saver {
         storage.add(getName(path), obj);
     }
 
-    public void saveScene(String path, String name, SceneStorage storage) {
+    public static void saveScene(String path, String name) {
         try {
             String p = path.endsWith("/") ? path : path + "/";
             String objectsPath = p + "objects/";
@@ -58,7 +58,7 @@ public class Saver {
             Files.createDirectories(Path.of(objectsPath));
 
             try (BufferedWriter writer = Files.newBufferedWriter(scenePath)) {
-                for (Map.Entry<String, Obj<?>> entry : storage.getObjects().entrySet()) {
+                for (Map.Entry<String, Obj<?>> entry : getStorage().getObjects().entrySet()) {
                     String objName = entry.getKey();
                     Obj<?> obj = entry.getValue();
                     String fileName = saveObject(objectsPath, objName, obj);
@@ -74,7 +74,7 @@ public class Saver {
         }
     }
 
-    public String saveObject(String path, String name, Obj<?> obj) {
+    public static String saveObject(String path, String name, Obj<?> obj) {
         String fullName = (path.endsWith("/") ? path : path + "/") + name + OBJ_FILE_EXTENSION;
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fullName))) {
             writer.write(getObjName(obj));
@@ -86,7 +86,7 @@ public class Saver {
         return fullName;
     }
 
-    private String getObjName(Obj<?> o) {
+    private static String getObjName(Obj<?> o) {
         if (o instanceof Light3D)
             return "Light3D";
         else if (o instanceof Camera3D)
@@ -104,7 +104,7 @@ public class Saver {
         throw new RuntimeException("Неизвестный класс объекта");
     }
 
-    private Obj<?> getObj(String name) {
+    private static Obj<?> getObj(String name) {
         return switch (name) {
             case "Light3D" -> new Light3D();
             case "Camera3D" -> new Camera3D();
@@ -117,13 +117,13 @@ public class Saver {
         };
     }
 
-    private String getName(String path) {
+    private static String getName(String path) {
         String[] p = path.split("/");
         String fileName = p[p.length - 1];
         return fileName.substring(0, fileName.lastIndexOf("."));
     }
 
-    public SceneStorage getStorage() {
+    public static SceneStorage getStorage() {
         return Context.get(Constants.STORAGE_KEY);
     }
 }

@@ -21,7 +21,7 @@ public class EngineFrame extends JFrame {
 
         enginePanel = new EnginePanel();
         enginePanel.addRender(render);
-        enginePanel.addLeftPanel(new LeftPanel(render.getWidth() / 4, render.getHeight()));
+        enginePanel.addLeftPanel(new LeftPanel(230, render.getHeight()));
         add(enginePanel);
 
         setSize(new Dimension(enginePanel.getWidth(), enginePanel.getHeight()));

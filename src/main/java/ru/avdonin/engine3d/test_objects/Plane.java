@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.rendering_panel.test_objects;
+package ru.avdonin.engine3d.test_objects;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
@@ -10,6 +10,11 @@ import java.util.Set;
 
 public class Plane extends Object3D {
     private final double size;
+
+    public Plane() {
+        this(new Point3D(), 200);
+    }
+
     public Plane(Point3D p, double size) {
         this(p, size, Color.WHITE);
     }

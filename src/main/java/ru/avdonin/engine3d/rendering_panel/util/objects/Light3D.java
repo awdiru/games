@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.avdonin.engine3d.rendering_panel.helpers.UtilHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 
+import javax.swing.*;
 import java.awt.*;
 
 @Getter
@@ -60,6 +61,11 @@ public class Light3D implements Obj<Light3D> {
     public void rotationRad(Point3D point, Vector3D normal, double angle) {
         this.vector.rotationRad(new Point3D(), normal, angle);
         this.point.rotationRad(point, normal, angle);
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
+        return null;
     }
 
     public void setIntensity(int intensity) {

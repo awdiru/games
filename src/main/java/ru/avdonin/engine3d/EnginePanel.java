@@ -2,6 +2,7 @@ package ru.avdonin.engine3d;
 
 import lombok.Getter;
 import ru.avdonin.engine3d.menu_panels.left.LeftPanel;
+import ru.avdonin.engine3d.menu_panels.left.UpPanel;
 import ru.avdonin.engine3d.rendering_panel.renders.Render;
 
 import javax.swing.*;
@@ -10,11 +11,15 @@ import java.awt.*;
 @Getter
 public class EnginePanel extends JPanel {
     private final JSplitPane leftPanel = new JSplitPane();
+    private final JSplitPane upPanel = new JSplitPane();
 
     public EnginePanel() {
         setLayout(new BorderLayout());
         leftPanel.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-        add(leftPanel, BorderLayout.CENTER);
+        upPanel.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        upPanel.setBottomComponent(leftPanel);
+        upPanel.setTopComponent(new UpPanel());
+        add(upPanel, BorderLayout.CENTER);
     }
 
     public void addRender(Render render) {

@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.rendering_panel.test_objects;
+package ru.avdonin.engine3d.test_objects;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
@@ -10,9 +10,15 @@ import java.util.Set;
 
 public class House extends Object3D {
     private final double size;
+
+    public House() {
+        this(new Point3D(), 100);
+    }
+
     public House(Point3D p, double size) {
         this(p, size, Color.WHITE);
     }
+
     public House(Point3D p, double size, Color color) {
         this.point = p;
         this.points.add(point);
@@ -65,7 +71,7 @@ public class House extends Object3D {
         Polygon3D p16 = new Polygon3D(points.get(6), points.get(9), points.get(7));
 
         Set<Polygon3D> polygons = Set.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
-        for (Polygon3D pol :polygons) addPolygon(pol);
+        for (Polygon3D pol : polygons) addPolygon(pol);
     }
 
     private List<Point3D> initPoints() {

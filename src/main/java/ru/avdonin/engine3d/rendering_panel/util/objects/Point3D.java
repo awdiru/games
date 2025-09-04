@@ -2,9 +2,15 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.Constants;
+import ru.avdonin.engine3d.Context;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
+import ru.avdonin.engine3d.storage.SceneStorage;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
@@ -146,5 +152,33 @@ public class Point3D implements Obj<Point3D> {
         if (parent == null)
             return color;
         return parent.getColor();
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
+        JFrame frame = Obj.super.getCreateFrame();
+        frame.setTitle("New Point");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        CoordsPane coords = new CoordsPane();
+        ColorsPane color = new ColorsPane();
+
+        JButton button = new JButton("->");
+        button.addActionListener(e -> {
+            move(getPoint(coords));
+            setColor(getColor(color));
+            saveObject("point");
+            frame.dispose();
+        });
+
+        panel.add(new JLabel("Point"));
+        panel.add(coords);
+        panel.add(new JLabel("Color"));
+        panel.add(color);
+        panel.add(button);
+        frame.add(panel);
+
+        return frame;
     }
 }

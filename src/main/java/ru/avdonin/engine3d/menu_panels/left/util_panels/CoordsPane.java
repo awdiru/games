@@ -1,12 +1,12 @@
-package ru.avdonin.engine3d.menu_panels.left;
+package ru.avdonin.engine3d.menu_panels.left.util_panels;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class CoordsPane extends JPanel {
-    protected final JTextField x = new JTextField(10);
-    protected final JTextField y = new JTextField(10);
-    protected final JTextField z = new JTextField(10);
+    private final JTextField x = new JTextField(10);
+    private final JTextField y = new JTextField(10);
+    private final JTextField z = new JTextField(10);
 
     public CoordsPane() {
         init();

@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.avdonin.engine3d.rendering_panel.helpers.UtilHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 
+import javax.swing.*;
 import java.awt.*;
 
 @Getter
@@ -61,6 +62,11 @@ public class Camera3D implements Obj<Camera3D> {
 
     @Override
     public Color getColor() {
+        return null;
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
         return null;
     }
 

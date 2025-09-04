@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.rendering_panel.test_objects;
+package ru.avdonin.engine3d.test_objects;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
@@ -11,9 +11,14 @@ import java.util.Set;
 public class Cube extends Object3D {
     private final double size;
 
+    public Cube() {
+        this(new Point3D(), 100);
+    }
+
     public Cube(Point3D p, double size) {
         this(p, size, Color.WHITE);
     }
+
     public Cube(Point3D p, double size, Color color) {
         this.point = p;
         this.points.add(point);

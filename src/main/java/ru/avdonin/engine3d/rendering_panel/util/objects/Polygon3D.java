@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
+import javax.swing.*;
 import java.awt.*;
 
 @Getter
@@ -77,6 +78,11 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
         if (parent == null)
             return color;
         return parent.getColor();
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
+        return null;
     }
 
     @Override
