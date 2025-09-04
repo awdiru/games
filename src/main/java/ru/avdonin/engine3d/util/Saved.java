@@ -3,10 +3,36 @@ package ru.avdonin.engine3d.util;
 import java.awt.*;
 
 public interface Saved {
+    /**
+     * Вернуть строковое представление объекта
+     *
+     * @return строковое представление объекта
+     */
     String getString();
+
+    /**
+     * Изменить значение переменной
+     *
+     * @param key   название переменной
+     * @param value новое значение
+     */
     void setValue(String key, String value);
+
+    /**
+     * Записать объект из его строкового представления
+     *
+     * @param obj строковое представление объекта
+     */
     void writeObject(String obj);
 
+    /**
+     * Получить подстроку между заданными символами
+     *
+     * @param s     изначальная строка
+     * @param char1 символ начала подстроки
+     * @param char2 символ конца подстроки
+     * @return искомая подстрока
+     */
     static String getStr(String s, String char1, String char2) {
         int index1 = s.indexOf(char1);
         if (index1 == -1)
@@ -19,12 +45,26 @@ public interface Saved {
         return s.substring(index1, index2);
     }
 
+    /**
+     * Сместить начало строки до искомого символа
+     *
+     * @param s изначальная строка
+     * @param c искомый символ
+     * @return искомая строка
+     */
     static String offsetStr(String s, String c) {
         int index = s.indexOf(c);
         if (index == -1)
             throw new RuntimeException("Некорректная запись");
-        return s.substring(index);
+        return s.substring(index + 1);
     }
+
+    /**
+     * Получить строковое представление цвета
+     *
+     * @param color цвет
+     * @return строковое представление цвета
+     */
 
     static String getColorStr(Color color) {
         int red = color.getRed();
@@ -34,7 +74,19 @@ public interface Saved {
         return "[" + red + " " + green + " " + blue + " " + alpha + "]";
     }
 
-    static Color getColor(String c) {
+    /**
+     * Получить цвет из строкового представления
+     *
+     * @param col строковое представление цвета
+     * @return цвет
+     */
+    static Color getColor(String col) {
+        String[] arr = col.split("\n");
+        if (arr.length != 1)
+            throw new RuntimeException("Некорректная запись");
+
+        String c = arr[0];
+
         if (!c.startsWith("[") || !c.endsWith("]"))
             throw new RuntimeException("Некорректная запись");
 

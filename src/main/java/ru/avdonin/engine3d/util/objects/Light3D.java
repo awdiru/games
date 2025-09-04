@@ -1,13 +1,24 @@
-package ru.avdonin.engine3d.util;
+package ru.avdonin.engine3d.util.objects;
 
 import lombok.Getter;
+import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
+import ru.avdonin.engine3d.util.Obj;
+
+import java.awt.*;
 
 @Getter
-public class Light3D extends Object3D {
+public class Light3D implements Obj<Light3D> {
+    private final Point3D point = new Point3D();
     private int intensity;
     private Vector3D vector;
     private double angle;
+    @Setter
+    private Color color = Color.WHITE;
+
+    public Light3D() {
+        this(new Point3D());
+    }
 
     public Light3D(Point3D start) {
         this(start, 0);
@@ -29,13 +40,26 @@ public class Light3D extends Object3D {
     }
 
     @Override
-    public void rotationRad(Point3D point, Vector3D normal, double angle) {
-        super.rotationRad(point, normal, angle);
-        this.vector.rotation(new Point3D(), normal, angle);
+    public void move(Point3D p) {
+        Vector3D vector = new Vector3D(point, p);
+        this.translate(vector);
     }
 
     @Override
-    protected void addPolygon(Polygon3D pol) {
+    public void move(Light3D light3D) {
+        Point3D point = light3D.getPoint();
+        this.point.move(point);
+    }
+
+    @Override
+    public void translate(Vector3D v) {
+        point.translate(v);
+    }
+
+    @Override
+    public void rotationRad(Point3D point, Vector3D normal, double angle) {
+        this.vector.rotationRad(new Point3D(), normal, angle);
+        this.point.rotationRad(point, normal, angle);
     }
 
     public void setIntensity(int intensity) {
@@ -58,7 +82,8 @@ public class Light3D extends Object3D {
 
     @Override
     public String getString() {
-        return "vector=" + vector.getString() + "\n" +
+        return "point=" + point.getString() + "\n" +
+                "vector=" + vector.getString() + "\n" +
                 "intensity=" + intensity + "\n" +
                 "angle=" + angle;
     }
@@ -66,6 +91,7 @@ public class Light3D extends Object3D {
     @Override
     public void setValue(String key, String value) {
         switch (key) {
+            case "point" -> point.writeObject(value);
             case "vector" -> vector.writeObject(value);
             case "intensity" -> intensity = Integer.parseInt(value);
             case "angle" -> angle = Double.parseDouble(value);
@@ -76,7 +102,7 @@ public class Light3D extends Object3D {
     @Override
     public void writeObject(String obj) {
         String[] lines = obj.split("\n");
-        if (lines.length != 3)
+        if (lines.length != 4)
             throw new RuntimeException("Некорректная запись");
 
         for (String line : lines) {

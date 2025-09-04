@@ -1,9 +1,9 @@
 package ru.avdonin.engine3d.helpers;
 
-import ru.avdonin.engine3d.util.Camera3D;
-import ru.avdonin.engine3d.util.Point3D;
-import ru.avdonin.engine3d.util.Polygon3D;
-import ru.avdonin.engine3d.util.Vector3D;
+import ru.avdonin.engine3d.util.objects.Camera3D;
+import ru.avdonin.engine3d.util.objects.Point3D;
+import ru.avdonin.engine3d.util.objects.Polygon3D;
+import ru.avdonin.engine3d.util.objects.Vector3D;
 
 public class BufferHelper {
     public static double getPointDepth(Point3D point, Camera3D camera) {

@@ -1,10 +1,11 @@
 package ru.avdonin.engine3d;
 
-import ru.avdonin.engine3d.objects.Cube;
-import ru.avdonin.engine3d.objects.Plane;
+import ru.avdonin.engine3d.test_objects.Cube;
+import ru.avdonin.engine3d.test_objects.Plane;
 import ru.avdonin.engine3d.renders.impl.SimpleRender;
+import ru.avdonin.engine3d.saver.Saver;
 import ru.avdonin.engine3d.storage.SceneStorage;
-import ru.avdonin.engine3d.util.*;
+import ru.avdonin.engine3d.util.objects.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +13,7 @@ import java.awt.*;
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            SimpleRender renderPanel = new SimpleRender(600, 400);
+            SimpleRender renderPanel = new SimpleRender(new SceneStorage(), 600, 400);
             SceneStorage storage = renderPanel.getSceneStorage();
 
             Point3D p0 = new Point3D();
@@ -32,6 +33,19 @@ public class Main {
 
             Plane plane = new Plane(p0, 700);
             storage.add("plane", plane);
+
+            Edge3D edge = new Edge3D(new Point3D(-300, 20, 0), new Point3D(300, 80, 0));
+            edge.setColor(new Color(114, 255, 0));
+            storage.add("edge", edge);
+
+            Vector3D vector = new Vector3D(new Point3D(-300, 10, -10), new Point3D(300, 100, 10));
+            vector.setColor(new Color(0, 39, 255));
+            storage.add("vector", vector);
+
+            Point3D point = new Point3D(-300, 40, 0);
+            point.setColor(new Color(203, 0, 255));
+            storage.add("point", point);
+
 
             Saver saver = new Saver();
             saver.saveScene( "save", "scene", storage);

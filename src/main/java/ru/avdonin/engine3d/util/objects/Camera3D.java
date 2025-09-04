@@ -1,11 +1,14 @@
-package ru.avdonin.engine3d.util;
+package ru.avdonin.engine3d.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
+import ru.avdonin.engine3d.util.Obj;
+
+import java.awt.*;
 
 @Getter
-public class Camera3D extends Object3D {
+public class Camera3D implements Obj<Camera3D> {
     private final Vector3D vectorX = new Vector3D(0, 0, 0);
     private final Vector3D vectorY = new Vector3D(0, 0, 0);
     private final Vector3D vectorZ = new Vector3D(0, 0, 0);
@@ -13,6 +16,10 @@ public class Camera3D extends Object3D {
     @Setter
     private double zoom = 1;
     private double viewingAngle = Math.PI / 2;
+
+    public Camera3D() {
+        this(new Point3D(), new Vector3D());
+    }
 
     public Camera3D(Point3D p, Vector3D v) {
         this.point = p;
@@ -34,6 +41,12 @@ public class Camera3D extends Object3D {
     }
 
     @Override
+    public void move(Camera3D camera3D) {
+        Point3D point = camera3D.getPoint();
+        move(point);
+    }
+
+    @Override
     public void translate(Vector3D v) {
         this.point.translate(v);
     }
@@ -47,8 +60,8 @@ public class Camera3D extends Object3D {
     }
 
     @Override
-    public void rotation(Point3D point, Vector3D vector, double angle) {
-        rotationRad(point, vector, Math.toRadians(angle));
+    public Color getColor() {
+        return null;
     }
 
     public void setlViewingAngle(double x) {

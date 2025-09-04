@@ -1,16 +1,21 @@
-package ru.avdonin.engine3d.util;
+package ru.avdonin.engine3d.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.util.Obj;
+import ru.avdonin.engine3d.util.Saved;
 
+import java.awt.*;
 import java.util.Objects;
 
 @Getter
 @Setter
-public class Point3D implements Saved {
+public class Point3D implements Obj<Point3D> {
     private double x;
     private double y;
     private double z;
+    private Color color = Color.WHITE;
+    private Obj<?> parent;
 
     public Point3D() {
         this(0.0, 0.0, 0.0);
@@ -26,30 +31,22 @@ public class Point3D implements Saved {
         this.z = z;
     }
 
-    public void move(Double x, Double y, Double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
+    @Override
     public void move(Point3D p) {
-        this.move(p.x, p.y, p.z);
+        this.x = p.x;
+        this.y = p.y;
+        this.z = p.z;
     }
 
-    public void translate(Double dx, Double dy, Double dz) {
-        this.x += dx;
-        this.y += dy;
-        this.z += dz;
-    }
-
-    public void translate(Point3D dP) {
-        this.translate(dP.x, dP.y, dP.z);
-    }
-
+    @Override
     public void translate(Vector3D v) {
-        this.translate(v.getDelta());
+        Point3D dP = v.getDelta();
+        this.x += dP.x;
+        this.y += dP.y;
+        this.z += dP.z;
     }
 
+    @Override
     public void rotationRad(Point3D point, Vector3D normal, double angle) {
         if (normal.getLength() < 1e-10) return;
 
@@ -87,11 +84,6 @@ public class Point3D implements Saved {
         this.z = point.getZ() + newZ;
     }
 
-    public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, Math.toRadians(angle));
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -106,12 +98,14 @@ public class Point3D implements Saved {
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ", " + z + ")";
+        if (color.equals(Color.WHITE))
+            return "(" + x + ", " + y + ", " + z + ")";
+        return "(" + x + ", " + y + ", " + z + ", " + Saved.getColorStr(color) + ")";
     }
 
     @Override
     public String getString() {
-        return "(" + x + " " + y + " " + z + ")";
+        return toString();
     }
 
     @Override
@@ -120,23 +114,37 @@ public class Point3D implements Saved {
             case "x" -> x = Double.parseDouble(value);
             case "y" -> y = Double.parseDouble(value);
             case "z" -> z = Double.parseDouble(value);
+            case "color" -> color = Saved.getColor(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
     }
 
     @Override
     public void writeObject(String obj) {
-        if (!obj.startsWith("(") || !obj.endsWith(")"))
+        String[] arr = obj.split("\n");
+        if (arr.length != 1)
+            throw new RuntimeException("Некорректная запись");
+        String point = arr[0];
+
+        if (!point.startsWith("(") || !point.endsWith(")"))
             throw new RuntimeException("Некорректная запись");
 
-        String str = obj.substring(1, obj.length() - 1);
-        String[] array = str.split(" ");
+        String str = point.substring(1, point.length() - 1);
+        String[] array = str.split(", ");
 
-        if (array.length != 3)
-            throw new RuntimeException("Некорректная запись");
+        if (array.length >= 3) {
+            setValue("x", array[0]);
+            setValue("y", array[1]);
+            setValue("z", array[2]);
+        }
+        if (array.length == 4)
+            setValue("color", array[3]);
+        else if (array.length != 3) throw new RuntimeException("Некорректная запись");
+    }
 
-        setValue("x", array[0]);
-        setValue("y", array[1]);
-        setValue("z", array[2]);
+    public Color getColor() {
+        if (parent == null)
+            return color;
+        return parent.getColor();
     }
 }

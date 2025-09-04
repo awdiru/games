@@ -1,15 +1,21 @@
-package ru.avdonin.engine3d.util;
+package ru.avdonin.engine3d.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.UtilHelper;
+import ru.avdonin.engine3d.util.Obj;
+import ru.avdonin.engine3d.util.Saved;
+
+import java.awt.*;
 
 @Getter
 @Setter
-public class Edge3D implements Saved {
+public class Edge3D implements Obj<Edge3D> {
     protected Point3D p1;
     protected Point3D p2;
     protected double length;
+    protected Color color = Color.WHITE;
+    protected Obj<?> parent;
 
     public Edge3D() {
         this(new Point3D(), new Point3D());
@@ -25,39 +31,37 @@ public class Edge3D implements Saved {
         this.length = calculateLength();
     }
 
-    public void move (Point3D p1, Point3D p2) {
-        this.p1.move(p1);
-        this.p2.move(p2);
-        this.length = calculateLength();
+    @Override
+    public void move(Point3D p) {
+        Vector3D vector = new Vector3D(p1, p);
+        this.translate(vector);
     }
 
+    @Override
     public void move(Edge3D e) {
-        this.move(e.p1, e.p2);
-    }
-
-    public void translate(Point3D dP1, Point3D dP2) {
-        this.p1.translate(dP1);
-        this.p2.translate(dP2);
+        this.p1.move(e.p1);
+        this.p2.move(e.p2);
         this.length = calculateLength();
     }
 
-    public void translate(Edge3D e) {
-        this.translate(e.p1, e.p2);
-    }
-
+    @Override
     public void translate(Vector3D v) {
         this.p1.translate(v);
         this.p2.translate(v);
         this.length = calculateLength();
     }
 
+    @Override
     public void rotationRad(Point3D point, Vector3D normal, double angle){
         this.p1.rotationRad(point, normal, angle);
         this.p2.rotationRad(point, normal, angle);
     }
 
-    public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, Math.toRadians(angle));
+    @Override
+    public Color getColor() {
+        if (parent == null)
+            return color;
+        return parent.getColor();
     }
 
     protected double calculateLength() {
@@ -66,7 +70,7 @@ public class Edge3D implements Saved {
 
     @Override
     public String getString() {
-        return "[" + p1.getString() + " " + p2.getString() + "]";
+        return "[" + p1.getString() + " " + p2.getString() + " " + Saved.getColorStr(color) +"]";
     }
 
     @Override
@@ -74,22 +78,37 @@ public class Edge3D implements Saved {
         switch (key) {
             case "p1" -> p1.writeObject(value);
             case "p2" -> p2.writeObject(value);
+            case "color" -> color = Saved.getColor(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
     }
 
     @Override
     public void writeObject(String obj) {
-        if(!obj.startsWith("[") || !obj.endsWith("]"))
+        String [] arr = obj.split("\n");
+        if (arr.length != 1)
+            throw new RuntimeException("Некорректная запись");
+        String edge = arr[0];
+        if(!edge.startsWith("[") || !edge.endsWith("]") )
             throw new RuntimeException("Некорректная запись");
 
-        String str = obj.substring(1, obj.length() - 1);
+        String str = edge.substring(1, edge.length() - 1);
 
         String p1 = Saved.getStr(str, "(", ")");
         setValue("p1", p1);
-        str = Saved.offsetStr(str, "(");
+        str = Saved.offsetStr(str, ")");
 
         String p2 = Saved.getStr(str, "(", ")");
         setValue("p2", p2);
+        str = Saved.offsetStr(str, ")");
+
+        String c = Saved.getStr(str, "[", "]");
+        setValue("color", c);
+    }
+
+    public double getLength() {
+        if (length == 0)
+            length = UtilHelper.getLength(p1, p2);
+        return length;
     }
 }

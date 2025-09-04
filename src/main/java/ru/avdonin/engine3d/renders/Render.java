@@ -3,7 +3,7 @@ package ru.avdonin.engine3d.renders;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.storage.SceneStorage;
-import ru.avdonin.engine3d.util.*;
+import ru.avdonin.engine3d.util.objects.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,26 +11,19 @@ import java.awt.*;
 @Getter
 @Setter
 public abstract class Render extends JPanel {
-    protected final Camera3D camera = new Camera3D(new Vector3D(0, 0, 1));
-    protected SceneStorage sceneStorage = new SceneStorage();
+    public static final String MAIN_CAMERA_NAME = "main_camera";
+    protected Camera3D camera = new Camera3D(new Vector3D(0, 0, 1));
+    protected SceneStorage sceneStorage;
 
     public Render() {
-        sceneStorage.add("camera", camera);
+        this(new SceneStorage());
     }
 
-    public void addObject(String name, Object3D o) {
-        if (o instanceof Light3D)
-            sceneStorage.getLights().put(name, (Light3D) o);
-        sceneStorage.add(name, o);
-        repaint();
+    public Render(SceneStorage storage) {
+        this.sceneStorage = storage;
+        Camera3D camera = this.sceneStorage.get(MAIN_CAMERA_NAME);
+        if (camera == null)
+            this.sceneStorage.add(MAIN_CAMERA_NAME, this.camera);
+        else this.camera = camera;
     }
-
-    public Object3D getObject(String name) {
-        return sceneStorage.get(name);
-    }
-
-    public abstract void renderPoint(Point3D point, Color color);
-
-    public abstract void renderLine(Edge3D edge3D, Color color);
-
 }

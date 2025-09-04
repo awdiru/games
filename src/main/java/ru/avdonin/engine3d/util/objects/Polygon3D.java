@@ -1,13 +1,15 @@
-package ru.avdonin.engine3d.util;
+package ru.avdonin.engine3d.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.util.Obj;
+import ru.avdonin.engine3d.util.Saved;
 
 import java.awt.*;
 
 @Getter
 @Setter
-public class Polygon3D implements Saved {
+public class Polygon3D implements Saved, Obj<Polygon3D> {
     private Point3D p1;
     private Point3D p2;
     private Point3D p3;
@@ -19,6 +21,8 @@ public class Polygon3D implements Saved {
     private boolean isReflection = false;
 
     private Object3D parent;
+
+    private Color color = Color.WHITE;
 
     public Polygon3D() {
         this(new Point3D(), new Point3D(), new Point3D());
@@ -38,43 +42,36 @@ public class Polygon3D implements Saved {
         this.edge3 = new Edge3D(p3, p1);
     }
 
-    public void move(Point3D p1, Point3D p2, Point3D p3) {
-        this.p1.move(p1);
-        this.p2.move(p2);
-        this.p3.move(p3);
+    @Override
+    public void move(Point3D p) {
+        Vector3D vector = new Vector3D(p1, p);
+        this.translate(vector);
     }
 
+    @Override
     public void move(Polygon3D pol) {
-        this.move(pol.p1, pol.p2, pol.p3);
+        this.p1.move(pol.p1);
+        this.p2.move(pol.p2);
+        this.p3.move(pol.p3);
     }
 
-    public void translate(Point3D dP1, Point3D dP2, Point3D dP3) {
-        this.p1.translate(dP1);
-        this.p1.translate(dP2);
-        this.p1.translate(dP3);
-    }
-
-    public void translate(Polygon3D dPol) {
-        this.translate(dPol.p1, dPol.p2, dPol.p3);
-    }
-
+    @Override
     public void translate(Vector3D v) {
         this.p1.translate(v);
         this.p1.translate(v);
         this.p1.translate(v);
     }
 
+    @Override
     public void rotationRad(Point3D point, Vector3D normal, double angle) {
         this.p1.rotationRad(point, normal, angle);
         this.p2.rotationRad(point, normal, angle);
         this.p3.rotationRad(point, normal, angle);
     }
 
-    public void rotation(Point3D point, Vector3D normal, double angle) {
-        rotationRad(point, normal, Math.toRadians(angle));
-    }
-
     public Color getColor() {
+        if (parent == null)
+            return color;
         return parent.getColor();
     }
 
@@ -96,23 +93,45 @@ public class Polygon3D implements Saved {
 
     @Override
     public void writeObject(String obj) {
-        if (!obj.startsWith("[") || !obj.endsWith("]"))
+        String [] arr = obj.split("\n");
+        if (arr.length != 1)
+            throw new RuntimeException("Некорректная запись");
+        String pol = arr[0];
+        if (!pol.startsWith("[") || !pol.endsWith("]"))
             throw new RuntimeException("Некорректная запись");
 
-        String str = obj.substring(1, obj.length() - 1);
+        String str = pol.substring(1, pol.length() - 1);
 
         String p1 = Saved.getStr(str, "(", ")");
         setValue("p1", p1);
-        str = Saved.offsetStr(str, "(");
+        str = Saved.offsetStr(str, ")");
 
         String p2 = Saved.getStr(str, "(", ")");
         setValue("p2", p2);
-        str = Saved.offsetStr(str, "(");
+        str = Saved.offsetStr(str, ")");
 
         String p3 = Saved.getStr(str, "(", ")");
         setValue("p3", p3);
         str = str.substring(str.lastIndexOf(" ") + 1);
 
         setValue("isReflection", str);
+    }
+
+    public void setP1(Point3D p1) {
+        this.p1 = p1;
+        this.edge1.setP1(p1);
+        this.edge3.setP2(p1);
+    }
+
+    public void setP2(Point3D p2) {
+        this.p2 = p2;
+        this.edge2.setP1(p2);
+        this.edge1.setP2(p2);
+    }
+
+    public void setP3(Point3D p3) {
+        this.p3 = p3;
+        this.edge3.setP1(p3);
+        this.edge2.setP2(p3);
     }
 }
