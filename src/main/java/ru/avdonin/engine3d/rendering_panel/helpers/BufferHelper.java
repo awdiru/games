@@ -8,7 +8,7 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 public class BufferHelper {
     public static double getPointDepth(Point3D point, Camera3D camera) {
         Point3D cameraPoint = camera.getPoint();
-        Vector3D cameraZ = UtilHelper.getNormalVector(camera.getVectorZ());
+        Vector3D cameraZ = UtilHelper.getNormalVector(camera.getBasis().getVectorZ());
         Vector3D viewVector = new Vector3D(cameraPoint, point);
         return viewVector.dot(cameraZ);
     }

@@ -2,11 +2,14 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -81,13 +84,62 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        return null;
+    public Point3D getPoint() {
+        return p1;
     }
 
     @Override
-    public String getString() {
-        return "[" + p1.getString() + " " + p2.getString() + " " + p3.getString() + " " + isReflection + "]";
+    public JFrame getCreateFrame() {
+        JFrame frame = Obj.super.getCreateFrame();
+        frame.setTitle("New Polygon");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        CoordsPane coord1 = new CoordsPane();
+        CoordsPane coord2 = new CoordsPane();
+        CoordsPane coord3 = new CoordsPane();
+        ColorsPane color = new ColorsPane();
+        JButton button = new JButton("->");
+        button.addActionListener(e -> {
+            p1.move(getPoint(coord1));
+            p2.move(getPoint(coord2));
+            p3.move(getPoint(coord3));
+            setColor(getColor(color));
+            saveObject("polygon", this);
+            frame.dispose();
+        });
+
+        panel.add(new JLabel("p1"));
+        panel.add(coord1);
+        panel.add(new JLabel("p2"));
+        panel.add(coord2);
+        panel.add(new JLabel("p3"));
+        panel.add(coord3);
+        panel.add(new JLabel("color"));
+        panel.add(color);
+        panel.add(button);
+
+        JScrollPane scroll = new JScrollPane(panel);
+        frame.add(scroll);
+
+        return frame;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("[")
+                .append(p1.toString()).append(" ")
+                .append(p2.toString()).append(" ")
+                .append(p3.toString());
+
+        if(!color.equals(Color.WHITE))
+            builder.append(" ").append(Saved.getColorStr(color));
+
+        builder.append(" ").append(isReflection).append("]");
+        return builder.toString();
     }
 
     @Override
@@ -96,6 +148,7 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
             case "p1" -> p1.writeObject(value);
             case "p2" -> p2.writeObject(value);
             case "p3" -> p3.writeObject(value);
+            case "color" -> color = Saved.getColor(value);
             case "isReflection" -> isReflection = Boolean.parseBoolean(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
@@ -103,7 +156,7 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
 
     @Override
     public void writeObject(String obj) {
-        String [] arr = obj.split("\n");
+        String[] arr = obj.split("\n");
         if (arr.length != 1)
             throw new RuntimeException("Некорректная запись");
         String pol = arr[0];
@@ -112,19 +165,31 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
 
         String str = pol.substring(1, pol.length() - 1);
 
-        String p1 = Saved.getStr(str, "(", ")");
-        setValue("p1", p1);
-        str = Saved.offsetStr(str, ")");
-
-        String p2 = Saved.getStr(str, "(", ")");
-        setValue("p2", p2);
-        str = Saved.offsetStr(str, ")");
-
-        String p3 = Saved.getStr(str, "(", ")");
-        setValue("p3", p3);
-        str = str.substring(str.lastIndexOf(" ") + 1);
-
-        setValue("isReflection", str);
+        String p = Saved.getSubString(str, '(', ')');
+        if (p != null && !p.isBlank()) {
+            setValue("p1", p);
+            str = str.substring(p.length() + 1);
+        }
+        p = Saved.getSubString(str, '(', ')');
+        if (p != null && !p.isBlank()) {
+            setValue("p2", p);
+            str = str.substring(p.length() + 1);
+        }
+        p = Saved.getSubString(str, '(', ')');
+        if (p != null && !p.isBlank()) {
+            setValue("p3", p);
+            str = str.substring(p.length() + 1);
+        }
+        p = Saved.getSubString(str, '[', ']');
+        if (p != null && !p.isBlank()) {
+            setValue("color", p);
+            str = str.substring(p.length() + 1);
+        }
+        p = str;
+        if (!p.isBlank()) {
+            p = p.substring(1, p.length() - 1);
+            setValue("isReflection", p);
+        }
     }
 
     public void setP1(Point3D p1) {
@@ -143,5 +208,21 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
         this.p3 = p3;
         this.edge3.setP1(p3);
         this.edge2.setP2(p3);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Polygon3D polygon3D = (Polygon3D) o;
+        return isReflection == polygon3D.isReflection
+                && Objects.equals(p1, polygon3D.p1)
+                && Objects.equals(p2, polygon3D.p2)
+                && Objects.equals(p3, polygon3D.p3)
+                && Objects.equals(color, polygon3D.color);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(p1, p2, p3, isReflection, color);
     }
 }

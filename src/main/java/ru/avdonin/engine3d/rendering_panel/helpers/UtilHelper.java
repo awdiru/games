@@ -75,13 +75,14 @@ public class UtilHelper {
     }
 
     public static Vector3D changeLenVector(Vector3D vector, double newLength) {
-        double dx = vector.getEnd().getX() - vector.getStart().getX();
-        double dy = vector.getEnd().getY() - vector.getStart().getY();
-        double dz = vector.getEnd().getZ() - vector.getStart().getZ();
-
+        Point3D delta = vector.getDelta();
         Point3D start = vector.getStart();
 
         double length = vector.getLength();
+
+        double dx = delta.getX();
+        double dy = delta.getY();
+        double dz = delta.getZ();
 
         if (length < 1e-10)
             return new Vector3D(vector.getStart(), vector.getEnd());

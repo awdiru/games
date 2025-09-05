@@ -4,13 +4,6 @@ import java.awt.*;
 
 public interface Saved {
     /**
-     * Вернуть строковое представление объекта
-     *
-     * @return строковое представление объекта
-     */
-    String getString();
-
-    /**
      * Изменить значение переменной
      *
      * @param key   название переменной
@@ -26,37 +19,40 @@ public interface Saved {
     void writeObject(String obj);
 
     /**
-     * Получить подстроку между заданными символами
+     * Получить подстроку между заданными символами.
+     * При этом учитывается количество открывающих и закрывающих символов.
      *
      * @param s     изначальная строка
      * @param char1 символ начала подстроки
      * @param char2 символ конца подстроки
      * @return искомая подстрока
      */
-    static String getStr(String s, String char1, String char2) {
-        int index1 = s.indexOf(char1);
-        if (index1 == -1)
-            throw new RuntimeException("Некорректная запись");
+    static String getSubString(String s, Character char1, Character char2) {
+        if (char1 == null || char2 == null) return s;
 
-        int index2 = s.indexOf(char2) + 1;
-        if (index2 == 0)
-            throw new RuntimeException("Некорректная запись");
+        int startIndex = s.indexOf(char1);
+        if (startIndex == -1)
+            return null;
 
-        return s.substring(index1, index2);
-    }
+        int count = 1;
 
-    /**
-     * Сместить начало строки до искомого символа
-     *
-     * @param s изначальная строка
-     * @param c искомый символ
-     * @return искомая строка
-     */
-    static String offsetStr(String s, String c) {
-        int index = s.indexOf(c);
-        if (index == -1)
-            throw new RuntimeException("Некорректная запись");
-        return s.substring(index + 1);
+        if (char1.equals(char2)) {
+            String str = s.substring(startIndex + 1);
+            int endIndex = str.indexOf(char2) + 2;
+            return s.substring(startIndex, endIndex);
+        }
+
+        for (int i = startIndex + 1; i < s.length(); i++) {
+            char currentChar = s.charAt(i);
+            if (char1.equals(currentChar))
+                count++;
+            else if (char2.equals(currentChar)) {
+                count--;
+                if (count == 0)
+                    return s.substring(startIndex, i + 1);
+            }
+        }
+        return null;
     }
 
     /**

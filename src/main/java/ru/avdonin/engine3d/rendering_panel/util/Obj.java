@@ -2,8 +2,8 @@ package ru.avdonin.engine3d.rendering_panel.util;
 
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 import ru.avdonin.engine3d.storage.SceneStorage;
@@ -11,7 +11,7 @@ import ru.avdonin.engine3d.storage.SceneStorage;
 import javax.swing.*;
 import java.awt.*;
 
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+import static javax.swing.WindowConstants.*;
 
 public interface Obj<T> extends Saved {
     /**
@@ -45,22 +45,6 @@ public interface Obj<T> extends Saved {
     void rotationRad(Point3D point, Vector3D normal, double angle);
 
     /**
-     * Вернуть цвет объекта
-     * @return цвет объекта
-     */
-    Color getColor();
-
-    default JFrame getCreateFrame(){
-        JFrame frame = new JFrame();
-        frame.setPreferredSize(new Dimension(230, 300));
-        frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        return frame;
-    }
-
-    /**
      * Повернуть объект
      *
      * @param point  точка поворота
@@ -71,6 +55,41 @@ public interface Obj<T> extends Saved {
         rotationRad(point, normal, Math.toRadians(angle));
     }
 
+    /**
+     * Вернуть цвет объекта
+     *
+     * @return цвет объекта
+     */
+    Color getColor();
+
+    /**
+     * Вернуть точку расположения объекта
+     *
+     * @return точка расположения объекта
+     */
+    Point3D getPoint();
+
+    /**
+     * Вернуть окно создания объекта
+     *
+     * @return окно создания объекта
+     */
+    default JFrame getCreateFrame() {
+        JFrame frame = new JFrame();
+        frame.setPreferredSize(new Dimension(230, 300));
+        frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        return frame;
+    }
+
+    /**
+     * Вернуть точку из панели ввода
+     *
+     * @param coords панель ввода
+     * @return точка
+     */
     default Point3D getPoint(CoordsPane coords) {
         double x = coords.getValue("x");
         double y = coords.getValue("y");
@@ -78,17 +97,28 @@ public interface Obj<T> extends Saved {
         return new Point3D(x, y, z);
     }
 
-    default Color getColor(ColorsPane color) {
-        int red = color.getValue("red");
-        int green = color.getValue("green");
-        int blue = color.getValue("blue");
-        int alpha = color.getValue("alpha");
+    /**
+     * Вернуть цвет из панели ввода
+     *
+     * @param colorsPane панель цвета
+     * @return цвет
+     */
+    default Color getColor(ColorsPane colorsPane) {
+        int red = colorsPane.getValue("red");
+        int green = colorsPane.getValue("green");
+        int blue = colorsPane.getValue("blue");
+        int alpha = colorsPane.getValue("alpha");
         return new Color(red, green, blue, alpha);
     }
 
-    default void saveObject(String name) {
+    /**
+     * Сохранить объект на сцене
+     *
+     * @param name имя объекта
+     */
+    default void saveObject(String name, Obj<?> obj) {
         SceneStorage storage = Context.get(Constants.STORAGE_KEY);
         int size = storage.getObjects().size();
-        storage.add(name + size, this);
+        storage.add(name + size, obj);
     }
 }

@@ -10,6 +10,7 @@ public class Context {
 
     static {
         context.put(Constants.STORAGE_KEY, new SceneStorage());
+        context.put(Constants.IS_SKELETON_KEY, Boolean.FALSE);
     }
 
     public static <V> V get(String key) {

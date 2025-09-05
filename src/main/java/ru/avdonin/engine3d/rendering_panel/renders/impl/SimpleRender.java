@@ -2,6 +2,8 @@ package ru.avdonin.engine3d.rendering_panel.renders.impl;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.Constants;
+import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.rendering_panel.buffer.ZBuffer;
 import ru.avdonin.engine3d.rendering_panel.helpers.BufferHelper;
 import ru.avdonin.engine3d.rendering_panel.helpers.RenderHelper;
@@ -19,7 +21,6 @@ import java.util.*;
 @Setter
 public class SimpleRender extends Render {
     private final ZBuffer zBuffer = new ZBuffer();
-    private boolean isSkeleton = false;
 
     public SimpleRender() {
         this(1280, 720);
@@ -95,6 +96,7 @@ public class SimpleRender extends Render {
     }
 
     private void renderPolygon(Graphics2D g2d, Polygon3D polygon) {
+        Boolean isSkeleton = Context.get(Constants.IS_SKELETON_KEY);
         if (isSkeleton) {
             paintLine(g2d, polygon.getEdge1());
             paintLine(g2d, polygon.getEdge2());
@@ -151,9 +153,9 @@ public class SimpleRender extends Render {
 
     private Point2D.Double projectPoint(Point3D point) {
         Point3D cameraPoint = camera.getPoint();
-        Vector3D cameraZ = UtilHelper.getNormalVector(camera.getVectorZ());
-        Vector3D cameraX = UtilHelper.getNormalVector(camera.getVectorX());
-        Vector3D cameraY = UtilHelper.getNormalVector(camera.getVectorY());
+        Vector3D cameraZ = camera.getBasis().getVectorZ();
+        Vector3D cameraX = camera.getBasis().getVectorX();
+        Vector3D cameraY = camera.getBasis().getVectorY();
 
         Vector3D viewVector = new Vector3D(cameraPoint, point);
 

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 public class Plane extends Object3D {
-    private final double size;
 
     public Plane() {
         this(new Point3D(), 200);
@@ -23,8 +22,7 @@ public class Plane extends Object3D {
         this.point = p;
         this.points.add(point);
         this.color = color;
-        this.size = size;
-        initPolygons();
+        initPolygons(size);
     }
 
     /*
@@ -33,8 +31,8 @@ public class Plane extends Object3D {
       p4-----p3
      */
 
-    private void initPolygons() {
-        List<Point3D> points = initPoints();
+    private void initPolygons(double size) {
+        List<Point3D> points = initPoints(size);
 
         Polygon3D p1 = new Polygon3D(points.get(1), points.get(3), points.get(2));
         Polygon3D p2 = new Polygon3D(points.get(1), points.get(4), points.get(3));
@@ -47,7 +45,7 @@ public class Plane extends Object3D {
         }
     }
 
-    private List<Point3D> initPoints() {
+    private List<Point3D> initPoints(double size) {
         double s = size / 2;
 
         Point3D p1 = new Point3D(point);

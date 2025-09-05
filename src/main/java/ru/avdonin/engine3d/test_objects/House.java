@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 public class House extends Object3D {
-    private final double size;
 
     public House() {
         this(new Point3D(), 100);
@@ -23,8 +22,7 @@ public class House extends Object3D {
         this.point = p;
         this.points.add(point);
         this.color = color;
-        this.size = size;
-        initPolygons();
+        initPolygons(size);
     }
 
     /*
@@ -42,8 +40,8 @@ public class House extends Object3D {
            p1__________p4
     */
 
-    private void initPolygons() {
-        List<Point3D> points = initPoints();
+    private void initPolygons(double size) {
+        List<Point3D> points = initPoints(size);
         // передняя грань
         Polygon3D p1 = new Polygon3D(points.get(4), points.get(2), points.get(1));
         Polygon3D p2 = new Polygon3D(points.get(4), points.get(3), points.get(2));
@@ -74,7 +72,7 @@ public class House extends Object3D {
         for (Polygon3D pol : polygons) addPolygon(pol);
     }
 
-    private List<Point3D> initPoints() {
+    private List<Point3D> initPoints(double size) {
         double s = size / 2;
 
         Point3D p1 = new Point3D(point);

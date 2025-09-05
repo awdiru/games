@@ -1,15 +1,18 @@
 package ru.avdonin.engine3d.test_objects;
 
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.Set;
 
 public class Cube extends Object3D {
-    private final double size;
 
     public Cube() {
         this(new Point3D(), 100);
@@ -23,8 +26,7 @@ public class Cube extends Object3D {
         this.point = p;
         this.points.add(point);
         this.color = color;
-        this.size = size;
-        initPolygons();
+        initPolygons(size);
     }
     /*
         p5__________p8
@@ -36,8 +38,8 @@ public class Cube extends Object3D {
            p2__________p3
     */
 
-    private void initPolygons() {
-        List<Point3D> points = initPoints();
+    private void initPolygons(double size) {
+        List<Point3D> points = initPoints(size);
         // передняя грань
         Polygon3D p1 = new Polygon3D(points.get(4), points.get(2), points.get(1));
         Polygon3D p2 = new Polygon3D(points.get(4), points.get(3), points.get(2));
@@ -65,7 +67,7 @@ public class Cube extends Object3D {
     }
 
 
-    private List<Point3D> initPoints() {
+    private List<Point3D> initPoints(double size) {
         double s = size / 2;
 
         Point3D p1 = new Point3D(point);
@@ -97,5 +99,59 @@ public class Cube extends Object3D {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    @Override
+    public JFrame getCreateFrame() {
+        JFrame frame = super.getCreateFrame();
+        frame.setTitle("New Cube");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        CoordsPane p = new CoordsPane();
+        ColorsPane c = new ColorsPane();
+        SField s = new SField();
+
+        JButton button = new JButton("->");
+        button.addActionListener(e -> {
+            Point3D point = getPoint(p);
+            Color color = getColor(c);
+            double size = s.getValue();
+
+            Cube cube = new Cube(point, size, color);
+            saveObject("cube", cube);
+            frame.dispose();
+        });
+
+        panel.add(new JLabel("point"));
+        panel.add(p);
+        panel.add(new JLabel("color"));
+        panel.add(c);
+        panel.add(new JLabel("size"));
+        panel.add(s);
+        panel.add(button);
+
+        JScrollPane scroll = new JScrollPane(panel);
+        frame.add(scroll);
+
+        return frame;
+    }
+
+    private static class SField extends SizeField<Double> {
+        public SField() {
+            super();
+        }
+
+        @Override
+        public Double getValue() {
+            String value = getValueText();
+            try {
+                return Double.parseDouble(value);
+            } catch (Exception e) {
+                return 100.0;
+            }
+        }
+
     }
 }

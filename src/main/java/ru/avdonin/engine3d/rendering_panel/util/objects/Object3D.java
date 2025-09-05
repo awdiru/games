@@ -13,6 +13,8 @@ import java.util.List;
 @Getter
 @Setter
 public class Object3D implements Obj<Object3D> {
+    public static final Color DEFAULT_COLOR = Color.WHITE;
+
     protected final Set<Polygon3D> polygons = new HashSet<>();
     protected final List<Point3D> points = new ArrayList<>();
     protected Point3D point;
@@ -65,7 +67,7 @@ public class Object3D implements Obj<Object3D> {
 
     @Override
     public JFrame getCreateFrame() {
-        return null;
+        return Obj.super.getCreateFrame();
     }
 
     protected void addPolygon(Polygon3D pol) {
@@ -80,14 +82,18 @@ public class Object3D implements Obj<Object3D> {
     }
 
     @Override
-    public String getString() {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("color=").append(Saved.getColorStr(color)).append("\n");
+
+        if (!color.equals(DEFAULT_COLOR))
+            builder.append("color=").append(Saved.getColorStr(color)).append("\n");
+
         for (int i = 0; i < points.size(); i++)
-            builder.append("p").append(i).append("=").append(points.get(i).getString()).append("\n");
+            builder.append("p").append(i).append("=").append(points.get(i)).append("\n");
 
         for (Polygon3D pol : polygons)
-            builder.append(pol.getString()).append("\n");
+            builder.append(pol).append("\n");
+
         return builder.toString();
     }
 
@@ -104,7 +110,7 @@ public class Object3D implements Obj<Object3D> {
         String[] lines = obj.split("\n");
 
         int count = 0;
-        for (; !lines[count].startsWith("p"); count++) {
+        for (; !lines[count].startsWith("p0"); count++) {
             String[] val = lines[count].split("=");
             setValue(val[0], val[1]);
         }
@@ -143,5 +149,20 @@ public class Object3D implements Obj<Object3D> {
             polygon.setParent(this);
             polygons.add(polygon);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Object3D object3D = (Object3D) o;
+        return Objects.equals(polygons, object3D.polygons)
+                && Objects.equals(points, object3D.points)
+                && Objects.equals(point, object3D.point)
+                && Objects.equals(color, object3D.color);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(polygons, points, point, color);
     }
 }

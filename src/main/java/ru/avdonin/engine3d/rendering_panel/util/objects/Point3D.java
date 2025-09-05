@@ -2,13 +2,10 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.Constants;
-import ru.avdonin.engine3d.Context;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
-import ru.avdonin.engine3d.storage.SceneStorage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +14,11 @@ import java.util.Objects;
 @Getter
 @Setter
 public class Point3D implements Obj<Point3D> {
-    private double x;
-    private double y;
-    private double z;
-    private Color color = Color.WHITE;
-    private Obj<?> parent;
+    protected double x;
+    protected double y;
+    protected double z;
+    protected Color color = Color.WHITE;
+    protected Obj<?> parent;
 
     public Point3D() {
         this(0.0, 0.0, 0.0);
@@ -90,28 +87,13 @@ public class Point3D implements Obj<Point3D> {
         this.z = point.getZ() + newZ;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Point3D point3D = (Point3D) o;
-        return Double.compare(x, point3D.x) == 0 && Double.compare(y, point3D.y) == 0 && Double.compare(z, point3D.z) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(x, y, z);
-    }
 
     @Override
     public String toString() {
+        String str = "(" + x + ", " + y + ", " + z;
         if (color.equals(Color.WHITE))
-            return "(" + x + ", " + y + ", " + z + ")";
-        return "(" + x + ", " + y + ", " + z + ", " + Saved.getColorStr(color) + ")";
-    }
-
-    @Override
-    public String getString() {
-        return toString();
+            return str + ")";
+        return str + ", " + Saved.getColorStr(color) + ")";
     }
 
     @Override
@@ -155,6 +137,11 @@ public class Point3D implements Obj<Point3D> {
     }
 
     @Override
+    public Point3D getPoint() {
+        return this;
+    }
+
+    @Override
     public JFrame getCreateFrame() {
         JFrame frame = Obj.super.getCreateFrame();
         frame.setTitle("New Point");
@@ -168,7 +155,7 @@ public class Point3D implements Obj<Point3D> {
         button.addActionListener(e -> {
             move(getPoint(coords));
             setColor(getColor(color));
-            saveObject("point");
+            saveObject("point", this);
             frame.dispose();
         });
 
@@ -177,8 +164,24 @@ public class Point3D implements Obj<Point3D> {
         panel.add(new JLabel("Color"));
         panel.add(color);
         panel.add(button);
-        frame.add(panel);
+
+        JScrollPane scroll = new JScrollPane(panel);
+        frame.add(scroll);
 
         return frame;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Point3D point3D = (Point3D) o;
+        return Double.compare(x, point3D.x) == 0
+                && Double.compare(y, point3D.y) == 0
+                && Double.compare(z, point3D.z) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 }

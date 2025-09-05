@@ -79,7 +79,7 @@ public class Saver {
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fullName))) {
             writer.write(getObjName(obj));
             writer.newLine();
-            writer.write(obj.getString());
+            writer.write(obj.toString());
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения объекта " + fullName, e);
         }

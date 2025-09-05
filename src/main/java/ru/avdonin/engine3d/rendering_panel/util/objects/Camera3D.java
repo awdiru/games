@@ -7,38 +7,35 @@ import ru.avdonin.engine3d.rendering_panel.util.Obj;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 @Getter
 public class Camera3D implements Obj<Camera3D> {
-    private final Vector3D vectorX = new Vector3D(0, 0, 0);
-    private final Vector3D vectorY = new Vector3D(0, 0, 0);
-    private final Vector3D vectorZ = new Vector3D(0, 0, 0);
-    private final Point3D point;
+    public final static Basis DEFAULT_BASIS = new Basis();
+    public final static Point3D DEFAULT_POINT = new Point3D();
+    public final static double DEFAULT_ZOOM = 1;
+    public final static double DEFAULT_VIEWING_ANGLE = Math.PI / 2;
+
+    private final Basis basis;
     @Setter
-    private double zoom = 1;
-    private double viewingAngle = Math.PI / 2;
+    private double zoom = DEFAULT_ZOOM;
+    private double viewingAngle = DEFAULT_VIEWING_ANGLE;
 
     public Camera3D() {
-        this(new Point3D(), new Vector3D());
+        this.basis = DEFAULT_BASIS;
     }
 
     public Camera3D(Point3D p, Vector3D v) {
-        this.point = p;
-        this.vectorZ.move(UtilHelper.getNormalVector(v));
-        computeVectorX();
-        computeVectorY();
+        this.basis = new Basis(p, v);
     }
 
     public Camera3D(Vector3D v) {
-        this.point = v.getStart();
-        this.vectorZ.move(UtilHelper.getNormalVector(v));
-        computeVectorX();
-        computeVectorY();
+        this.basis = new Basis(v.getStart(), v);
     }
 
     @Override
     public void move(Point3D p) {
-        this.point.move(p);
+        this.basis.move(p);
     }
 
     @Override
@@ -49,15 +46,12 @@ public class Camera3D implements Obj<Camera3D> {
 
     @Override
     public void translate(Vector3D v) {
-        this.point.translate(v);
+        this.basis.translate(v);
     }
 
     @Override
     public void rotationRad(Point3D point, Vector3D vector, double angle) {
-        this.vectorX.rotationRad(new Point3D(), vector, angle);
-        this.vectorY.rotationRad(new Point3D(), vector, angle);
-        this.vectorZ.rotationRad(new Point3D(), vector, angle);
-        this.point.rotationRad(point, vector, angle);
+        this.basis.rotationRad(point, vector, angle);
     }
 
     @Override
@@ -66,11 +60,24 @@ public class Camera3D implements Obj<Camera3D> {
     }
 
     @Override
+    public Point3D getPoint() {
+        return basis.getPoint();
+    }
+
+    @Override
     public JFrame getCreateFrame() {
         return null;
     }
 
-    public void setlViewingAngle(double x) {
+    public double getViewingAngle() {
+        return Math.toDegrees(viewingAngle);
+    }
+
+    public double getViewingAngleRad() {
+        return viewingAngle;
+    }
+
+    public void setViewingAngle(double x) {
         this.viewingAngle = Math.toRadians(x);
     }
 
@@ -85,67 +92,22 @@ public class Camera3D implements Obj<Camera3D> {
         return h / tan;
     }
 
-    private void computeVectorX() {
-        Vector3D worldX = new Vector3D(1, 0, 0);
-
-        double angle = UtilHelper.getAngleRad(vectorZ, worldX);
-
-        double xx = Math.sin(angle);
-        double yx = 0;
-        double zx = Math.cos(angle);
-        Vector3D vectorX = UtilHelper.getNormalVector(new Vector3D(xx, yx, zx));
-        this.vectorX.move(vectorX);
-    }
-
-    private void computeVectorY() {
-        double xz = vectorZ.getEnd().getX();
-        double yz = vectorZ.getEnd().getY();
-        double zz = vectorZ.getEnd().getZ();
-
-        double xx = vectorX.getEnd().getX();
-        double yx = vectorX.getEnd().getY();
-        double zx = vectorX.getEnd().getZ();
-
-        double xy = yz * zx - zz * yx;
-        double yy = zz * xx - xz * zx;
-        double zy = xz * yx - yz * xx;
-
-        Vector3D vectorY = new Vector3D(xy, yy, zy);
-        if (vectorY.getLength() > 1.001 || vectorY.getLength() < 0.999)
-            vectorY = UtilHelper.getNormalVector(vectorY);
-
-        this.vectorY.move(vectorY);
-    }
-
-    public Point3D getVectorXEnd() {
-        return vectorX.getEnd();
-    }
-
-    public Point3D getVectorYEnd() {
-        return vectorY.getEnd();
-    }
-
-    public Point3D getVectorZEnd() {
-        return vectorZ.getEnd();
-    }
-
     @Override
-    public String getString() {
-        return "vectorX=" + vectorX.getString() + "\n" +
-                "vectorY=" + vectorY.getString() + "\n" +
-                "vectorZ=" + vectorZ.getString() + "\n" +
-                "point=" + point.getString() + "\n" +
-                "zoom=" + zoom + "\n" +
-                "viewingAngle=" + viewingAngle;
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (!basis.equals(DEFAULT_BASIS))
+            builder.append("basis=").append(basis).append("\n");
+        if (zoom != DEFAULT_ZOOM)
+            builder.append("zoom=").append(zoom).append("\n");
+        if (viewingAngle != DEFAULT_VIEWING_ANGLE)
+            builder.append("viewingAngle=").append(viewingAngle);
+        return builder.toString();
     }
 
     @Override
     public void setValue(String key, String value) {
         switch (key) {
-            case "vectorX" -> vectorX.writeObject(value);
-            case "vectorY" -> vectorY.writeObject(value);
-            case "vectorZ" -> vectorZ.writeObject(value);
-            case "point" -> point.writeObject(value);
+            case "basis" -> basis.writeObject(value);
             case "zoom" -> zoom = Double.parseDouble(value);
             case "viewingAngle" -> viewingAngle = Double.parseDouble(value);
             default -> throw new RuntimeException("Некорректное название переменной");
@@ -155,12 +117,23 @@ public class Camera3D implements Obj<Camera3D> {
     @Override
     public void writeObject(String obj) {
         String[] lines = obj.split("\n");
-        if (lines.length != 6)
-            throw new RuntimeException("Некорректная запись");
-
         for (String line : lines) {
             String[] l = line.split("=");
             setValue(l[0], l[1]);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Camera3D camera3D = (Camera3D) o;
+        return Double.compare(zoom, camera3D.zoom) == 0
+                && Double.compare(viewingAngle, camera3D.viewingAngle) == 0
+                && Objects.equals(basis, camera3D.basis);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(basis, zoom, viewingAngle);
     }
 }

@@ -1,11 +1,11 @@
-package ru.avdonin.engine3d.menu_panels.left.util_panels;
+package ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels;
 
 import javax.swing.*;
 
 public class RotatePane extends JPanel {
     private final CoordsPane point = new CoordsPane();
     private final CoordsPane vector = new CoordsPane();
-    private final JTextField angle = new JTextField(10);
+    private final AngleField angle = new AngleField();
 
     public RotatePane() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -27,12 +27,27 @@ public class RotatePane extends JPanel {
     }
 
     public double getAngle() {
-        return Double.parseDouble(angle.getText());
+        return angle.getValue();
     }
 
     public void clear() {
         point.clear();
         vector.clear();
-        angle.setText("");
+        angle.clear();
+    }
+
+    private class AngleField extends SizeField<Double> {
+        public AngleField() {
+            super("Angle");
+        }
+        @Override
+        public Double getValue() {
+            String value = valueField.getText();
+            try {
+                return Double.parseDouble(value);
+            } catch (Exception e) {
+                return 0.0;
+            }
+        }
     }
 }
