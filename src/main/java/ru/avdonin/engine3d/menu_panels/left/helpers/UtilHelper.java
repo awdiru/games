@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.rendering_panel.helpers;
+package ru.avdonin.engine3d.menu_panels.left.helpers;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Edge3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
@@ -6,6 +6,13 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 
 public class UtilHelper {
+    /**
+     * Рассчитать расстояние между двумя точками
+     *
+     * @param p1 точка 1
+     * @param p2 точка 2
+     * @return расстояние между точккками
+     */
     public static double getLength(Point3D p1, Point3D p2) {
         double dx = p1.getX() - p2.getX();
         double dy = p1.getY() - p2.getY();
@@ -13,6 +20,14 @@ public class UtilHelper {
         return Math.sqrt(((dx * dx) + (dy * dy) + (dz * dz)));
     }
 
+    /**
+     * Вернуть нормаль к плоскости, образованной тремя точками
+     *
+     * @param p1 точка 1
+     * @param p2 точка 2
+     * @param p3 точка 3
+     * @return нормаль к плоскости
+     */
     public static Vector3D getNormal(Point3D p1, Point3D p2, Point3D p3) {
         double x1 = p1.getX();
         double y1 = p1.getY();
@@ -33,10 +48,23 @@ public class UtilHelper {
         return new Vector3D(nx, ny, nz);
     }
 
+    /**
+     * Вернуть нормаль к плоскости полигона
+     *
+     * @param p полигон
+     * @return нормаль к плоскости полигона
+     */
     public static Vector3D getNormal(Polygon3D p) {
         return getNormal(p.getP1(), p.getP2(), p.getP3());
     }
 
+    /**
+     * Рассчитать угол в радианах между векторами
+     *
+     * @param v1 вектор 1
+     * @param v2 вектор 2
+     * @return угол в радианах
+     */
     public static double getAngleRad(Vector3D v1, Vector3D v2) {
         Vector3D nv1 = getNormalVector(v1);
         Vector3D nv2 = getNormalVector(v2);
@@ -54,11 +82,24 @@ public class UtilHelper {
         return Math.acos(m);
     }
 
+    /**
+     * Рассчитать угол в градусах между векторами
+     *
+     * @param v1 вектор 1
+     * @param v2 вектор 2
+     * @return угол в градусах
+     */
     public static double getAngle(Vector3D v1, Vector3D v2) {
         double angle = getAngleRad(v1, v2);
         return Math.toDegrees(angle);
     }
 
+    /**
+     * Нормализовать вектор
+     *
+     * @param v изначальный вектор
+     * @return нормализованный вектор
+     */
     public static Vector3D getNormalVector(Vector3D v) {
         Point3D d = v.getDelta();
 
@@ -74,6 +115,13 @@ public class UtilHelper {
         return new Vector3D(xe, ye, ze);
     }
 
+    /**
+     * Изменить длину вектора
+     *
+     * @param vector    изначальный вектор
+     * @param newLength новая длина
+     * @return измененный вектор
+     */
     public static Vector3D changeLenVector(Vector3D vector, double newLength) {
         Point3D delta = vector.getDelta();
         Point3D start = vector.getStart();
@@ -96,6 +144,12 @@ public class UtilHelper {
         return v;
     }
 
+    /**
+     * Рассчитать центр полигона
+     *
+     * @param p полигон
+     * @return рассчитанный центр
+     */
     public static Point3D getCenterPolygon(Polygon3D p) {
         Point3D p1 = p.getP1();
         Point3D p2 = p.getP2();
@@ -108,6 +162,13 @@ public class UtilHelper {
         return new Point3D(x, y, z);
     }
 
+    /**
+     * Рассчитать точку пересечения отрезка и полигона
+     *
+     * @param polygon полигон
+     * @param edge    отрезок
+     * @return точка пересечения
+     */
     public static Point3D calculateCollision(Polygon3D polygon, Edge3D edge) {
         Point3D p1 = polygon.getP1();
         Point3D p2 = polygon.getP2();
@@ -160,5 +221,4 @@ public class UtilHelper {
 
         return (u >= 0) && (v >= 0) && (u + v <= 1) ? intersectionPoint : null;
     }
-
 }

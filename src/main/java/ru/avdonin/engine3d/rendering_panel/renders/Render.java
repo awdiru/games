@@ -27,4 +27,8 @@ public abstract class Render extends JPanel {
     public SceneStorage getStorage() {
         return Context.get(Constants.STORAGE_KEY);
     }
+
+    public void setSkeleton(Boolean isSkeleton) {
+        Context.put(Constants.IS_SKELETON_KEY, isSkeleton);
+    }
 }

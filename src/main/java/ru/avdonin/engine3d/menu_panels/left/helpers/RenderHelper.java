@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.rendering_panel.helpers;
+package ru.avdonin.engine3d.menu_panels.left.helpers;
 
 import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.Constants;
@@ -11,6 +11,14 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 import java.awt.*;
 
 public class RenderHelper {
+    /**
+     * Рассчитать интенсивность падающего света на полигон
+     *
+     * @param minIntensity минимальная интенсивность света
+     * @param polygon      полигон
+     * @param light        источник света
+     * @return интенсивность падающего на полигон света
+     */
     public static double computeIntensityLight(int minIntensity, Polygon3D polygon, Light3D light) {
         Point3D pCenter = UtilHelper.getCenterPolygon(polygon);
         Vector3D pn = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
@@ -19,6 +27,12 @@ public class RenderHelper {
         return Math.max(minIntensity, Math.cos(angle) * light.getIntensity());
     }
 
+    /**
+     * Рассчитать цвет полигона с учетом источников света
+     *
+     * @param polygon полигон
+     * @return итоговый цвет полигона
+     */
     public static Color computeColor(Polygon3D polygon) {
         SceneStorage sceneStorage = Context.get(Constants.STORAGE_KEY);
         double intensity = 0;
@@ -35,5 +49,16 @@ public class RenderHelper {
         double blue = (double) color.getBlue() / 255;
 
         return new Color((int) (red * intensity), (int) (green * intensity), (int) (blue * intensity), color.getAlpha());
+    }
+
+    /**
+     * Вернуть яркость
+     *
+     * @param color цвет
+     * @return яркость
+     */
+    public static double getBrightness(Color color) {
+        // Вычисляем яркость цвета по формуле: 0.2126*R + 0.7152*G + 0.0722*B
+        return 0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue();
     }
 }

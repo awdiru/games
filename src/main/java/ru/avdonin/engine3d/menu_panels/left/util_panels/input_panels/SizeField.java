@@ -27,10 +27,18 @@ public abstract class SizeField<T> extends JPanel {
         add(valueField, gbc);
     }
 
+    /**
+     * Вернуть значение строки в виде текста
+     *
+     * @return значение в виде текста
+     */
     public String getValueText() {
         return valueField.getText();
     }
 
+    /**
+     * Очистить строку
+     */
     public void clear() {
         valueField.setText("");
     }

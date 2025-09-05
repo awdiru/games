@@ -1,5 +1,6 @@
 package ru.avdonin.engine3d.test_objects;
 
+import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
@@ -102,12 +103,11 @@ public class Cube extends Object3D {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        JFrame frame = super.getCreateFrame();
+    public void getCreateFrame() {
+        JFrame frame = createFrame();
         frame.setTitle("New Cube");
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = createPanel();
 
         CoordsPane p = new CoordsPane();
         ColorsPane c = new ColorsPane();
@@ -115,12 +115,12 @@ public class Cube extends Object3D {
 
         JButton button = new JButton("->");
         button.addActionListener(e -> {
-            Point3D point = getPoint(p);
-            Color color = getColor(c);
+            Point3D point = MenuHelper.getPoint(p);
+            Color color = MenuHelper.getColor(c);
             double size = s.getValue();
 
             Cube cube = new Cube(point, size, color);
-            saveObject("cube", cube);
+            MenuHelper.saveObject("cube", cube);
             frame.dispose();
         });
 
@@ -134,8 +134,6 @@ public class Cube extends Object3D {
 
         JScrollPane scroll = new JScrollPane(panel);
         frame.add(scroll);
-
-        return frame;
     }
 
     private static class SField extends SizeField<Double> {
@@ -152,6 +150,5 @@ public class Cube extends Object3D {
                 return 100.0;
             }
         }
-
     }
 }

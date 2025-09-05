@@ -2,6 +2,8 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
@@ -13,7 +15,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class Point3D implements Obj<Point3D> {
+public class Point3D extends Obj<Point3D> {
     protected double x;
     protected double y;
     protected double z;
@@ -93,7 +95,7 @@ public class Point3D implements Obj<Point3D> {
         String str = "(" + x + ", " + y + ", " + z;
         if (color.equals(Color.WHITE))
             return str + ")";
-        return str + ", " + Saved.getColorStr(color) + ")";
+        return str + ", " + SavedHelper.getColorStr(color) + ")";
     }
 
     @Override
@@ -102,7 +104,7 @@ public class Point3D implements Obj<Point3D> {
             case "x" -> x = Double.parseDouble(value);
             case "y" -> y = Double.parseDouble(value);
             case "z" -> z = Double.parseDouble(value);
-            case "color" -> color = Saved.getColor(value);
+            case "color" -> color = SavedHelper.getColor(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
     }
@@ -142,20 +144,19 @@ public class Point3D implements Obj<Point3D> {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        JFrame frame = Obj.super.getCreateFrame();
+    public void getCreateFrame() {
+        JFrame frame = createFrame();
         frame.setTitle("New Point");
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = createPanel();
         CoordsPane coords = new CoordsPane();
         ColorsPane color = new ColorsPane();
 
         JButton button = new JButton("->");
         button.addActionListener(e -> {
-            move(getPoint(coords));
-            setColor(getColor(color));
-            saveObject("point", this);
+            move(MenuHelper.getPoint(coords));
+            setColor(MenuHelper.getColor(color));
+            MenuHelper.saveObject("point", this);
             frame.dispose();
         });
 
@@ -167,8 +168,6 @@ public class Point3D implements Obj<Point3D> {
 
         JScrollPane scroll = new JScrollPane(panel);
         frame.add(scroll);
-
-        return frame;
     }
 
     @Override

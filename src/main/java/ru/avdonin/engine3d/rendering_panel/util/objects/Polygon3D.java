@@ -2,6 +2,8 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
@@ -13,7 +15,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class Polygon3D implements Saved, Obj<Polygon3D> {
+public class Polygon3D extends Obj<Polygon3D> {
     private Point3D p1;
     private Point3D p2;
     private Point3D p3;
@@ -89,12 +91,11 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        JFrame frame = Obj.super.getCreateFrame();
+    public void getCreateFrame() {
+        JFrame frame = createFrame();
         frame.setTitle("New Polygon");
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = createPanel();
 
         CoordsPane coord1 = new CoordsPane();
         CoordsPane coord2 = new CoordsPane();
@@ -102,11 +103,11 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
         ColorsPane color = new ColorsPane();
         JButton button = new JButton("->");
         button.addActionListener(e -> {
-            p1.move(getPoint(coord1));
-            p2.move(getPoint(coord2));
-            p3.move(getPoint(coord3));
-            setColor(getColor(color));
-            saveObject("polygon", this);
+            p1.move(MenuHelper.getPoint(coord1));
+            p2.move(MenuHelper.getPoint(coord2));
+            p3.move(MenuHelper.getPoint(coord3));
+            setColor(MenuHelper.getColor(color));
+            MenuHelper.saveObject("polygon", this);
             frame.dispose();
         });
 
@@ -122,8 +123,6 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
 
         JScrollPane scroll = new JScrollPane(panel);
         frame.add(scroll);
-
-        return frame;
     }
 
     @Override
@@ -136,7 +135,7 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
                 .append(p3.toString());
 
         if(!color.equals(Color.WHITE))
-            builder.append(" ").append(Saved.getColorStr(color));
+            builder.append(" ").append(SavedHelper.getColorStr(color));
 
         builder.append(" ").append(isReflection).append("]");
         return builder.toString();
@@ -148,7 +147,7 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
             case "p1" -> p1.writeObject(value);
             case "p2" -> p2.writeObject(value);
             case "p3" -> p3.writeObject(value);
-            case "color" -> color = Saved.getColor(value);
+            case "color" -> color = SavedHelper.getColor(value);
             case "isReflection" -> isReflection = Boolean.parseBoolean(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
@@ -165,22 +164,22 @@ public class Polygon3D implements Saved, Obj<Polygon3D> {
 
         String str = pol.substring(1, pol.length() - 1);
 
-        String p = Saved.getSubString(str, '(', ')');
+        String p = SavedHelper.getSubString(str, '(', ')');
         if (p != null && !p.isBlank()) {
             setValue("p1", p);
             str = str.substring(p.length() + 1);
         }
-        p = Saved.getSubString(str, '(', ')');
+        p = SavedHelper.getSubString(str, '(', ')');
         if (p != null && !p.isBlank()) {
             setValue("p2", p);
             str = str.substring(p.length() + 1);
         }
-        p = Saved.getSubString(str, '(', ')');
+        p = SavedHelper.getSubString(str, '(', ')');
         if (p != null && !p.isBlank()) {
             setValue("p3", p);
             str = str.substring(p.length() + 1);
         }
-        p = Saved.getSubString(str, '[', ']');
+        p = SavedHelper.getSubString(str, '[', ']');
         if (p != null && !p.isBlank()) {
             setValue("color", p);
             str = str.substring(p.length() + 1);

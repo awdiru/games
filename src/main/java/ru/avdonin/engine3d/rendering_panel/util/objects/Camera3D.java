@@ -2,7 +2,6 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.rendering_panel.helpers.UtilHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 
 import javax.swing.*;
@@ -10,7 +9,7 @@ import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class Camera3D implements Obj<Camera3D> {
+public class Camera3D extends Obj<Camera3D> {
     public final static Basis DEFAULT_BASIS = new Basis();
     public final static Point3D DEFAULT_POINT = new Point3D();
     public final static double DEFAULT_ZOOM = 1;
@@ -65,8 +64,7 @@ public class Camera3D implements Obj<Camera3D> {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        return null;
+    public void getCreateFrame() {
     }
 
     public double getViewingAngle() {

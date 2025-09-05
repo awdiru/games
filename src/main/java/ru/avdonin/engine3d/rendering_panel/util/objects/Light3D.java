@@ -2,10 +2,12 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
-import ru.avdonin.engine3d.rendering_panel.helpers.UtilHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.UtilHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
@@ -14,7 +16,7 @@ import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class Light3D implements Obj<Light3D> {
+public class Light3D extends Obj<Light3D> {
     public final static Point3D DEFAULT_POINT = new Point3D();
     public final static Vector3D DEFAULT_VECTOR = new Vector3D(0, 0, 1);
     public final static int DEFAULT_INTENSITY = 500;
@@ -108,7 +110,7 @@ public class Light3D implements Obj<Light3D> {
             builder.append("angle=").append(angle).append("\n");
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append("color=").append(Saved.getColorStr(color));
+            builder.append("color=").append(SavedHelper.getColorStr(color));
 
         return builder.toString();
     }
@@ -120,7 +122,7 @@ public class Light3D implements Obj<Light3D> {
             case "vector" -> vector.writeObject(value);
             case "intensity" -> intensity = Integer.parseInt(value);
             case "angle" -> angle = Double.parseDouble(value);
-            case "color" -> color = Saved.getColor(value);
+            case "color" -> color = SavedHelper.getColor(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
     }
@@ -137,12 +139,11 @@ public class Light3D implements Obj<Light3D> {
 
 
     @Override
-    public JFrame getCreateFrame() {
-        JFrame frame = Obj.super.getCreateFrame();
+    public void getCreateFrame() {
+        JFrame frame = createFrame();
         frame.setTitle("New Light");
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = createPanel();
         CoordsPane p = new CoordsPane();
         CoordsPane v = new CoordsPane();
         ColorsPane c = new ColorsPane();
@@ -152,14 +153,14 @@ public class Light3D implements Obj<Light3D> {
         JButton button = new JButton("->");
 
         button.addActionListener(e -> {
-            point.move(getPoint(p));
-            vector.setP2(getPoint(v));
-            setColor(getColor(c));
+            point.move(MenuHelper.getPoint(p));
+            vector.setP2(MenuHelper.getPoint(v));
+            setColor(MenuHelper.getColor(c));
             angle = a.getValue();
             double intensity = i.getValue();
             this.intensity = (int) intensity;
 
-            saveObject("Light", this);
+            MenuHelper.saveObject("Light", this);
             frame.dispose();
         });
 
@@ -177,7 +178,6 @@ public class Light3D implements Obj<Light3D> {
 
         JScrollPane scroll = new JScrollPane(panel);
         frame.add(scroll);
-        return frame;
     }
 
     @Override

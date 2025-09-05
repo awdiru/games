@@ -2,9 +2,11 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.rendering_panel.helpers.UtilHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.UtilHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
@@ -14,7 +16,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class Edge3D implements Obj<Edge3D> {
+public class Edge3D extends Obj<Edge3D> {
     public static final Color DEFAULT_COLOR = Color.WHITE;
 
     protected Point3D p1;
@@ -72,12 +74,11 @@ public class Edge3D implements Obj<Edge3D> {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        JFrame frame = Obj.super.getCreateFrame();
+    public void getCreateFrame() {
+        JFrame frame = createFrame();
         frame.setTitle("New Edge");
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel panel = createPanel();
 
         CoordsPane coord1 = new CoordsPane();
         CoordsPane coord2 = new CoordsPane();
@@ -85,11 +86,11 @@ public class Edge3D implements Obj<Edge3D> {
 
         JButton button = new JButton("->");
         button.addActionListener(e -> {
-            p1.move(getPoint(coord1));
-            p2.move(getPoint(coord2));
-            setColor(getColor(color));
+            p1.move(MenuHelper.getPoint(coord1));
+            p2.move(MenuHelper.getPoint(coord2));
+            setColor(MenuHelper.getColor(color));
             String name = (this instanceof Vector3D ? "vector" : "edge");
-            saveObject(name, this);
+            MenuHelper.saveObject(name, this);
             frame.dispose();
         });
 
@@ -103,8 +104,6 @@ public class Edge3D implements Obj<Edge3D> {
 
         JScrollPane scroll = new JScrollPane(panel);
         frame.add(scroll);
-
-        return frame;
     }
 
     @Override
@@ -114,7 +113,7 @@ public class Edge3D implements Obj<Edge3D> {
         if(!p1.equals(new Point3D()) && !p2.equals(new Point3D()))
             builder.append(p1).append(" ").append(p2);
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(" ").append(Saved.getColorStr(color));
+            builder.append(" ").append(SavedHelper.getColorStr(color));
         builder.append("]");
         return builder.toString();
     }
@@ -124,7 +123,7 @@ public class Edge3D implements Obj<Edge3D> {
         switch (key) {
             case "p1" -> p1.writeObject(value);
             case "p2" -> p2.writeObject(value);
-            case "color" -> color = Saved.getColor(value);
+            case "color" -> color = SavedHelper.getColor(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
     }
@@ -140,19 +139,19 @@ public class Edge3D implements Obj<Edge3D> {
 
         String str = edge.substring(1, edge.length() - 1);
 
-        String p = Saved.getSubString(str, '(', ')');
+        String p = SavedHelper.getSubString(str, '(', ')');
         if (p != null && !p.isBlank()) {
             setValue("p1", p);
             str = str.substring(p.length());
         }
 
-        p = Saved.getSubString(str, '(', ')');
+        p = SavedHelper.getSubString(str, '(', ')');
         if (p != null && !p.isBlank()) {
             setValue("p2", p);
             str = str.substring(p.length());
         }
 
-        p = Saved.getSubString(str, '[', ']');
+        p = SavedHelper.getSubString(str, '[', ']');
         if (p != null && !p.isBlank())
             setValue("color", p);
     }

@@ -13,7 +13,7 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        test2();
+        test1();
     }
 
     private static void test1() {
@@ -21,7 +21,7 @@ public class Main {
             SimpleRender renderPanel = new SimpleRender(600, 600);
             Camera3D camera = renderPanel.getCamera();
             camera.move(new Point3D(100, 150, -400));
-            renderPanel.setSkeleton(false);
+            renderPanel.setSkeleton(true);
 
             SceneStorage storage = Context.get(Constants.STORAGE_KEY);
 
@@ -29,8 +29,8 @@ public class Main {
             Cube cube = new Cube(c, 100);
             storage.add("Cube", cube);
 
-            Point3D l = new Point3D(150, 150, -150);
-            Light3D light = new Light3D(l);
+            Point3D l = new Point3D(150, 200, -150);
+            Light3D light = new Light3D(l, 700);
             storage.add("Light", light);
 
             Saver.saveScene("save", "scene");

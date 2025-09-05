@@ -2,6 +2,7 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.rendering_panel.util.Obj;
 import ru.avdonin.engine3d.rendering_panel.util.Saved;
 
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Object3D implements Obj<Object3D> {
+public class Object3D extends Obj<Object3D> {
     public static final Color DEFAULT_COLOR = Color.WHITE;
 
     protected final Set<Polygon3D> polygons = new HashSet<>();
@@ -66,8 +67,7 @@ public class Object3D implements Obj<Object3D> {
     }
 
     @Override
-    public JFrame getCreateFrame() {
-        return Obj.super.getCreateFrame();
+    public void getCreateFrame() {
     }
 
     protected void addPolygon(Polygon3D pol) {
@@ -86,7 +86,7 @@ public class Object3D implements Obj<Object3D> {
         StringBuilder builder = new StringBuilder();
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append("color=").append(Saved.getColorStr(color)).append("\n");
+            builder.append("color=").append(SavedHelper.getColorStr(color)).append("\n");
 
         for (int i = 0; i < points.size(); i++)
             builder.append("p").append(i).append("=").append(points.get(i)).append("\n");
@@ -100,7 +100,7 @@ public class Object3D implements Obj<Object3D> {
     @Override
     public void setValue(String key, String value) {
         switch (key) {
-            case "color" -> color = Saved.getColor(value);
+            case "color" -> color = SavedHelper.getColor(value);
             default -> throw new RuntimeException("Некорректное название переменной");
         }
     }
