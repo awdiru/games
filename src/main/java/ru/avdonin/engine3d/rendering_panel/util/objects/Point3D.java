@@ -3,11 +3,11 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
 import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
-import ru.avdonin.engine3d.rendering_panel.util.Saved;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,12 +15,12 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class Point3D extends Obj<Point3D> {
+public class Point3D extends AbstractObject3D<Point3D> {
     protected double x;
     protected double y;
     protected double z;
     protected Color color = Color.WHITE;
-    protected Obj<?> parent;
+    protected AbstractObject3D<?> parent;
 
     public Point3D() {
         this(0.0, 0.0, 0.0);
@@ -89,13 +89,11 @@ public class Point3D extends Obj<Point3D> {
         this.z = point.getZ() + newZ;
     }
 
-
     @Override
-    public String toString() {
-        String str = "(" + x + ", " + y + ", " + z;
-        if (color.equals(Color.WHITE))
-            return str + ")";
-        return str + ", " + SavedHelper.getColorStr(color) + ")";
+    public String getString (int count) {
+        String str = "[" + x + ", " + y + ", " + z;
+        return color.equals(Color.WHITE) ? str + "]"
+                : str + ", " + SavedHelper.getColorStr(color) + "]";
     }
 
     @Override
@@ -105,7 +103,7 @@ public class Point3D extends Obj<Point3D> {
             case "y" -> y = Double.parseDouble(value);
             case "z" -> z = Double.parseDouble(value);
             case "color" -> color = SavedHelper.getColor(value);
-            default -> throw new RuntimeException("Некорректное название переменной");
+            default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }
 
@@ -113,11 +111,11 @@ public class Point3D extends Obj<Point3D> {
     public void writeObject(String obj) {
         String[] arr = obj.split("\n");
         if (arr.length != 1)
-            throw new RuntimeException("Некорректная запись");
+            throw new RuntimeException("Некорректная запись " + obj);
         String point = arr[0];
 
-        if (!point.startsWith("(") || !point.endsWith(")"))
-            throw new RuntimeException("Некорректная запись");
+        if (!point.startsWith("[") || !point.endsWith("]"))
+            throw new RuntimeException("Некорректная запись " + obj);
 
         String str = point.substring(1, point.length() - 1);
         String[] array = str.split(", ");
@@ -129,13 +127,11 @@ public class Point3D extends Obj<Point3D> {
         }
         if (array.length == 4)
             setValue("color", array[3]);
-        else if (array.length != 3) throw new RuntimeException("Некорректная запись");
+        else if (array.length != 3) throw new RuntimeException("Некорректная запись " + obj);
     }
 
     public Color getColor() {
-        if (parent == null)
-            return color;
-        return parent.getColor();
+        return parent == null ? color : parent.getColor();
     }
 
     @Override
@@ -144,11 +140,11 @@ public class Point3D extends Obj<Point3D> {
     }
 
     @Override
-    public void getCreateFrame() {
-        JFrame frame = createFrame();
+    public void openCreateFrame() {
+        JFrame frame = JFrameHelper.createFrame();
         frame.setTitle("New Point");
 
-        JPanel panel = createPanel();
+        JPanel panel = JFrameHelper.createPanel();
         CoordsPane coords = new CoordsPane();
         ColorsPane color = new ColorsPane();
 
@@ -156,7 +152,7 @@ public class Point3D extends Obj<Point3D> {
         button.addActionListener(e -> {
             move(MenuHelper.getPoint(coords));
             setColor(MenuHelper.getColor(color));
-            MenuHelper.saveObject("point", this);
+            SavedHelper.addObjectToScene("point", this);
             frame.dispose();
         });
 

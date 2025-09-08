@@ -4,7 +4,7 @@ import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.storage.SceneStorage;
 
@@ -37,16 +37,5 @@ public class MenuHelper {
         int blue = colorsPane.getValue("blue");
         int alpha = colorsPane.getValue("alpha");
         return new Color(red, green, blue, alpha);
-    }
-
-    /**
-     * Сохранить объект на сцене
-     *
-     * @param name имя объекта
-     */
-    public static void saveObject(String name, Obj<?> obj) {
-        SceneStorage storage = Context.get(Constants.STORAGE_KEY);
-        int size = storage.getObjects().size();
-        storage.add(name + size, obj);
     }
 }

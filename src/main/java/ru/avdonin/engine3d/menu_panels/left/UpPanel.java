@@ -1,16 +1,15 @@
 package ru.avdonin.engine3d.menu_panels.left;
 
 import lombok.Getter;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.rendering_panel.util.Creatable;
 import ru.avdonin.engine3d.rendering_panel.util.objects.*;
-import ru.avdonin.engine3d.test_objects.Cube;
+import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Cube;
+import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.House;
+import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Plane;
 import ru.avdonin.engine3d.saver.Saver;
-import ru.avdonin.engine3d.test_objects.House;
-import ru.avdonin.engine3d.test_objects.Plane;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Constructor;
 
 public class UpPanel extends JPanel {
     public UpPanel() {
@@ -25,7 +24,7 @@ public class UpPanel extends JPanel {
 
     private JButton createSaveButton() {
         JButton button = new JButton("save");
-        button.addActionListener(e -> Saver.saveScene("save","scene"));
+        button.addActionListener(e -> Saver.saveScene("save", "scene"));
         return button;
     }
 
@@ -41,8 +40,8 @@ public class UpPanel extends JPanel {
         for (ListObj obj : ListObj.values()) {
             JMenuItem item = new JMenuItem(obj.getName());
             item.addActionListener(e -> {
-                Obj<?> o = obj.newInstance();
-                o.getCreateFrame();
+                Creatable o = obj.newInstance();
+                o.openCreateFrame();
             });
             menu.add(item);
         }
@@ -62,20 +61,15 @@ public class UpPanel extends JPanel {
         HOUSE("House", House.class);
 
         private final String name;
-        private final Class<? extends Obj<?>> aClass;
+        private final Class<? extends Creatable> aClass;
 
-        ListObj(String name, Class<? extends Obj<?>> aClass) {
+        ListObj(String name, Class<? extends Creatable> aClass) {
             this.name = name;
             this.aClass = aClass;
         }
 
-        public <T> T newInstance() {
-            try {
-                Constructor<?> constructor = aClass.getDeclaredConstructor();
-                return (T) constructor.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create instance of " + aClass.getName(), e);
-            }
+        public Creatable newInstance() {
+            return Creatable.newInstance(aClass.getName());
         }
     }
 }

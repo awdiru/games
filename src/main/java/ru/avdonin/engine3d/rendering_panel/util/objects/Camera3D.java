@@ -2,16 +2,16 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
+import ru.avdonin.engine3d.saver.Saver;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class Camera3D extends Obj<Camera3D> {
+public class Camera3D extends AbstractObject3D<Camera3D> {
     public final static Basis DEFAULT_BASIS = new Basis();
-    public final static Point3D DEFAULT_POINT = new Point3D();
     public final static double DEFAULT_ZOOM = 1;
     public final static double DEFAULT_VIEWING_ANGLE = Math.PI / 2;
 
@@ -64,7 +64,7 @@ public class Camera3D extends Obj<Camera3D> {
     }
 
     @Override
-    public void getCreateFrame() {
+    public void openCreateFrame() {
     }
 
     public double getViewingAngle() {
@@ -91,14 +91,22 @@ public class Camera3D extends Obj<Camera3D> {
     }
 
     @Override
-    public String toString() {
+    public String getString(int count) {
+
         StringBuilder builder = new StringBuilder();
+        builder.append("[");
+
+        String splitter = SavedHelper.getStringSplitter(++count);
         if (!basis.equals(DEFAULT_BASIS))
-            builder.append("basis=").append(basis).append("\n");
+            builder.append(splitter).append("basis=").append(basis.getString(count));
+
         if (zoom != DEFAULT_ZOOM)
-            builder.append("zoom=").append(zoom).append("\n");
+            builder.append(splitter).append("zoom=[").append(zoom).append("]");
+
         if (viewingAngle != DEFAULT_VIEWING_ANGLE)
-            builder.append("viewingAngle=").append(viewingAngle);
+            builder.append(splitter).append("viewingAngle=[").append(viewingAngle).append("]");
+
+        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
         return builder.toString();
     }
 
@@ -108,16 +116,7 @@ public class Camera3D extends Obj<Camera3D> {
             case "basis" -> basis.writeObject(value);
             case "zoom" -> zoom = Double.parseDouble(value);
             case "viewingAngle" -> viewingAngle = Double.parseDouble(value);
-            default -> throw new RuntimeException("Некорректное название переменной");
-        }
-    }
-
-    @Override
-    public void writeObject(String obj) {
-        String[] lines = obj.split("\n");
-        for (String line : lines) {
-            String[] l = line.split("=");
-            setValue(l[0], l[1]);
+            default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }
 

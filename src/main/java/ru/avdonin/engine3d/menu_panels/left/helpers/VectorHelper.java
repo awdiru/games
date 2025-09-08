@@ -5,7 +5,7 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 
-public class UtilHelper {
+public class VectorHelper {
     /**
      * Рассчитать расстояние между двумя точками
      *
@@ -177,7 +177,7 @@ public class UtilHelper {
         Point3D e1 = edge.getP1();
         Point3D e2 = edge.getP2();
 
-        Vector3D normal = UtilHelper.getNormal(polygon);
+        Vector3D normal = VectorHelper.getNormal(polygon);
 
         double a = normal.getEnd().getX();
         double b = normal.getEnd().getY();

@@ -6,7 +6,7 @@ import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.RotatePane;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 import ru.avdonin.engine3d.storage.SceneStorage;
@@ -55,7 +55,7 @@ public class LeftPanel extends JPanel {
             double z = coords.getValue("z");
             coords.clear();
 
-            Obj<?> obj = getStorage().getSelectedObject();
+            AbstractObject3D<?> obj = getStorage().getSelectedObject();
             if (obj != null) {
                 switch (name) {
                     case MOVE -> obj.move(new Point3D(x, y, z));
@@ -79,7 +79,7 @@ public class LeftPanel extends JPanel {
 
         RotatePane rotatePane = new RotatePane();
         JButton button = createButton(e -> {
-            Obj<?> obj = getStorage().getSelectedObject();
+            AbstractObject3D<?> obj = getStorage().getSelectedObject();
             if (obj == null) return;
 
             Point3D point = new Point3D(

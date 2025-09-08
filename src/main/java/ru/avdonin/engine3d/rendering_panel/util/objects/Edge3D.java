@@ -3,12 +3,12 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
 import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.menu_panels.left.helpers.UtilHelper;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
-import ru.avdonin.engine3d.rendering_panel.util.Saved;
+import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,13 +16,13 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class Edge3D extends Obj<Edge3D> {
+public class Edge3D extends AbstractObject3D<Edge3D> {
     public static final Color DEFAULT_COLOR = Color.WHITE;
 
     protected Point3D p1;
     protected Point3D p2;
     protected Color color = Color.WHITE;
-    protected Obj<?> parent;
+    protected AbstractObject3D<?> parent;
 
     public Edge3D() {
         this(new Point3D(), new Point3D());
@@ -63,9 +63,7 @@ public class Edge3D extends Obj<Edge3D> {
 
     @Override
     public Color getColor() {
-        if (parent == null)
-            return color;
-        return parent.getColor();
+        return parent == null ? color : parent.getColor();
     }
 
     @Override
@@ -74,11 +72,11 @@ public class Edge3D extends Obj<Edge3D> {
     }
 
     @Override
-    public void getCreateFrame() {
-        JFrame frame = createFrame();
+    public void openCreateFrame() {
+        JFrame frame = JFrameHelper.createFrame();
         frame.setTitle("New Edge");
 
-        JPanel panel = createPanel();
+        JPanel panel = JFrameHelper.createPanel();
 
         CoordsPane coord1 = new CoordsPane();
         CoordsPane coord2 = new CoordsPane();
@@ -90,7 +88,7 @@ public class Edge3D extends Obj<Edge3D> {
             p2.move(MenuHelper.getPoint(coord2));
             setColor(MenuHelper.getColor(color));
             String name = (this instanceof Vector3D ? "vector" : "edge");
-            MenuHelper.saveObject(name, this);
+            SavedHelper.addObjectToScene(name, this);
             frame.dispose();
         });
 
@@ -107,14 +105,20 @@ public class Edge3D extends Obj<Edge3D> {
     }
 
     @Override
-    public String toString() {
+    public String getString (int count) {
+
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        if(!p1.equals(new Point3D()) && !p2.equals(new Point3D()))
-            builder.append(p1).append(" ").append(p2);
+
+        String splitter = SavedHelper.getStringSplitter(++count);
+        if (!p1.equals(new Point3D()) && !p2.equals(new Point3D()))
+            builder.append(splitter).append("p1=").append(p1.getString(count))
+                    .append(splitter).append("p2=").append(p2.getString(count));
+
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(" ").append(SavedHelper.getColorStr(color));
-        builder.append("]");
+            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+
+        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
         return builder.toString();
     }
 
@@ -124,40 +128,12 @@ public class Edge3D extends Obj<Edge3D> {
             case "p1" -> p1.writeObject(value);
             case "p2" -> p2.writeObject(value);
             case "color" -> color = SavedHelper.getColor(value);
-            default -> throw new RuntimeException("Некорректное название переменной");
+            default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
-    }
-
-    @Override
-    public void writeObject(String obj) {
-        String[] arr = obj.split("\n");
-        if (arr.length != 1)
-            throw new RuntimeException("Некорректная запись");
-        String edge = arr[0];
-        if (!edge.startsWith("[") || !edge.endsWith("]"))
-            throw new RuntimeException("Некорректная запись");
-
-        String str = edge.substring(1, edge.length() - 1);
-
-        String p = SavedHelper.getSubString(str, '(', ')');
-        if (p != null && !p.isBlank()) {
-            setValue("p1", p);
-            str = str.substring(p.length());
-        }
-
-        p = SavedHelper.getSubString(str, '(', ')');
-        if (p != null && !p.isBlank()) {
-            setValue("p2", p);
-            str = str.substring(p.length());
-        }
-
-        p = SavedHelper.getSubString(str, '[', ']');
-        if (p != null && !p.isBlank())
-            setValue("color", p);
     }
 
     public double getLength() {
-        return UtilHelper.getLength(p1, p2);
+        return VectorHelper.getLength(p1, p2);
     }
 
     @Override

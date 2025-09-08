@@ -2,7 +2,7 @@ package ru.avdonin.engine3d.storage;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Camera3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Light3D;
 
@@ -11,13 +11,13 @@ import java.util.Map;
 
 @Getter
 public class SceneStorage {
-    private final Map<String, Obj<?>> objects = new HashMap<>();
+    private final Map<String, AbstractObject3D<?>> objects = new HashMap<>();
     private final Map<String, Light3D> lights = new HashMap<>();
     private final Map<String, Camera3D> cameras = new HashMap<>();
     @Setter
-    private Obj<?> selectedObject = null;
+    private AbstractObject3D<?> selectedObject = null;
 
-    public void add(String key, Obj<?> obj) {
+    public void add(String key, AbstractObject3D<?> obj) {
         if (obj instanceof Light3D)
             lights.put(key, (Light3D) obj);
         if (obj instanceof Camera3D)
@@ -25,7 +25,7 @@ public class SceneStorage {
         objects.put(key, obj);
     }
 
-    public <T extends Obj<?>> T get(String key) {
+    public <T extends AbstractObject3D<?>> T get(String key) {
         return (T) objects.get(key);
     }
 

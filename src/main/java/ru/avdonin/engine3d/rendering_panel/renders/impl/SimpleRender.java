@@ -8,10 +8,10 @@ import ru.avdonin.engine3d.rendering_panel.buffer.FrameBuffer;
 import ru.avdonin.engine3d.rendering_panel.buffer.ZBuffer;
 import ru.avdonin.engine3d.menu_panels.left.helpers.BufferHelper;
 import ru.avdonin.engine3d.menu_panels.left.helpers.RenderHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.UtilHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
 import ru.avdonin.engine3d.rendering_panel.renders.Render;
 import ru.avdonin.engine3d.storage.SceneStorage;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.*;
 
 import java.awt.*;
@@ -41,9 +41,9 @@ public class SimpleRender extends Render {
         zBuffer.clearZBuffer();
         frameBuffer.clearBuffer();
 
-        for (Map.Entry<String, Obj<?>> entry : storage.getObjects().entrySet()) {
+        for (Map.Entry<String, AbstractObject3D<?>> entry : storage.getObjects().entrySet()) {
             String name = entry.getKey();
-            Obj<?> obj = entry.getValue();
+            AbstractObject3D<?> obj = entry.getValue();
             if (obj instanceof Light3D o)
                 renderLight(o);
             else if (obj instanceof Point3D o)
@@ -108,7 +108,7 @@ public class SimpleRender extends Render {
 
     private void renderVector(Vector3D vector) {
         renderLine(vector);
-        Vector3D s = UtilHelper.changeLenVector(new Vector3D(vector.getEnd(), vector.getStart()), 10);
+        Vector3D s = VectorHelper.changeLenVector(new Vector3D(vector.getEnd(), vector.getStart()), 10);
         s.setColor(vector.getColor());
 
         Vector3D s1 = new Vector3D(s);
@@ -196,11 +196,11 @@ public class SimpleRender extends Render {
     }
 
     private double getCameraAngle(Polygon3D polygon) {
-        Vector3D polygonNormal = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
+        Vector3D polygonNormal = VectorHelper.getNormalVector(VectorHelper.getNormal(polygon));
         Point3D cameraPoint = camera.getPoint();
-        Point3D centerPolygon = UtilHelper.getCenterPolygon(polygon);
+        Point3D centerPolygon = VectorHelper.getCenterPolygon(polygon);
         Vector3D toCamera = new Vector3D(centerPolygon, cameraPoint);
-        return UtilHelper.getAngle(polygonNormal, toCamera);
+        return VectorHelper.getAngle(polygonNormal, toCamera);
     }
 
     private boolean isVisiblePolygon(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3) {
@@ -223,7 +223,7 @@ public class SimpleRender extends Render {
         int xCenter = (int) center.x;
         int yCenter = (int) center.y;
 
-        double distance = UtilHelper.getLength(camera.getPoint(), point);
+        double distance = VectorHelper.getLength(camera.getPoint(), point);
         int r = (int) (light.getIntensity() * 30 / distance);
         if (r > 50) r = 50;
 
@@ -318,8 +318,8 @@ public class SimpleRender extends Render {
 
         Vector3D vector = new Vector3D(p1, p2);
         double length = vector.getLength();
-        vector = UtilHelper.getNormalVector(vector);
-        vector = UtilHelper.changeLenVector(vector, dottedSize);
+        vector = VectorHelper.getNormalVector(vector);
+        vector = VectorHelper.changeLenVector(vector, dottedSize);
 
         int N = (int) (length / dottedSize);
 

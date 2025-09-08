@@ -1,33 +1,68 @@
 package ru.avdonin.engine3d.menu_panels.left.helpers;
 
+import ru.avdonin.engine3d.Constants;
+import ru.avdonin.engine3d.Context;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
+import ru.avdonin.engine3d.storage.SceneStorage;
+
 import java.awt.*;
+import java.util.List;
 
 public class SavedHelper {
 
     /**
-     * Получить подстроку между заданными символами.
-     * При этом учитывается количество открывающих и закрывающих символов.
+     * Сохранить объект на сцене
      *
-     * @param s     изначальная строка
-     * @param char1 символ начала подстроки
-     * @param char2 символ конца подстроки
-     * @return искомая подстрока
+     * @param name имя объекта
      */
-    public static String getSubString(String s, Character char1, Character char2) {
-        if (char1 == null || char2 == null) return s;
+    public static void addObjectToScene(String name, AbstractObject3D<?> obj) {
+        validateNameObject(name);
+        SceneStorage storage = Context.get(Constants.STORAGE_KEY);
+        int size = storage.getObjects().size();
+        storage.add(name + size, obj);
+    }
+
+    /**
+     * Проверить корректность имени объекта
+     *
+     * @param name имя объекта
+     */
+    public static void validateNameObject(String name) {
+        List<String> chars = List.of("[", "]", ",", ".", " ");
+        for (String s : chars) {
+            if (name.contains(s))
+                throw new RuntimeException("Имя объекта " + name + " содержит недопустимый символ " + s);
+        }
+    }
+
+    /**
+     * Получить имя первого объекта в записи
+     *
+     * @param s изначальная запись
+     * @return имя первого объекта
+     */
+    public static String getNameObject(String s) {
+        int index = s.indexOf("=");
+        String name = s.substring(0, index);
+        validateNameObject(name);
+        name = name.strip();
+        return name;
+    }
+
+    /**
+     * Получить запись первого объекта в общей записи
+     *
+     * @param s изначальная запись
+     * @return запись объекта
+     */
+    public static String getStrObject(String s) {
+        Character char1 = '[';
+        Character char2 = ']';
 
         int startIndex = s.indexOf(char1);
-        if (startIndex == -1)
-            return null;
+        if (startIndex == -1) return "";
 
         int count = 1;
-
-        if (char1.equals(char2)) {
-            String str = s.substring(startIndex + 1);
-            int endIndex = str.indexOf(char2) + 2;
-            return s.substring(startIndex, endIndex);
-        }
-
         for (int i = startIndex + 1; i < s.length(); i++) {
             char currentChar = s.charAt(i);
             if (char1.equals(currentChar))
@@ -38,7 +73,7 @@ public class SavedHelper {
                     return s.substring(startIndex, i + 1);
             }
         }
-        return null;
+        return "";
     }
 
     /**
@@ -83,5 +118,9 @@ public class SavedHelper {
         int alpha = Integer.parseInt(array[3]);
 
         return new Color(red, green, blue, alpha);
+    }
+
+    public static String getStringSplitter(int count) {
+        return "\n" + "\t".repeat(count);
     }
 }

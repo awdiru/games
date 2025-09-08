@@ -3,35 +3,33 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
-import ru.avdonin.engine3d.rendering_panel.util.Saved;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 @Getter
 @Setter
-public class Object3D extends Obj<Object3D> {
+public class Object3D extends AbstractObject3D<Object3D> {
     public static final Color DEFAULT_COLOR = Color.WHITE;
 
     protected final Set<Polygon3D> polygons = new HashSet<>();
-    protected final List<Point3D> points = new ArrayList<>();
-    protected Point3D point;
-    protected Color color;
+    protected final Set<Point3D> points = new HashSet<>();
+    protected Point3D point = new Point3D();
+    protected Color color = DEFAULT_COLOR;
 
     public Object3D() {
-        this.color = Color.WHITE;
+        this.points.add(point);
     }
 
     public Object3D(Object3D o) {
-        this(o.getPolygons());
+        this.points.add(point);
+        for(Polygon3D p : o.polygons) addPolygon(new Polygon3D(p));
     }
 
     public Object3D(Set<Polygon3D> polygons) {
-        this.polygons.addAll(polygons);
-        this.color = Color.WHITE;
+        this.points.add(point);
+        for (Polygon3D p : polygons) addPolygon(p);
     }
 
     public Object3D(Color color, Polygon3D... polygons) {
@@ -67,33 +65,47 @@ public class Object3D extends Obj<Object3D> {
     }
 
     @Override
-    public void getCreateFrame() {
+    public void openCreateFrame() {
     }
 
     protected void addPolygon(Polygon3D pol) {
         pol.setParent(this);
         polygons.add(pol);
 
-        if (!points.contains(pol.getP1())) points.add(pol.getP1());
-        if (!points.contains(pol.getP2())) points.add(pol.getP2());
-        if (!points.contains(pol.getP3())) points.add(pol.getP3());
+        for (Point3D p : points) {
+            if (pol.getP1().equals(p)) pol.setP1(p);
+            if (pol.getP2().equals(p)) pol.setP2(p);
+            if (pol.getP3().equals(p)) pol.setP3(p);
+        }
 
-        if (point.equals(new Point3D())) point.move(pol.getP1());
+        points.add(pol.getP1());
+        points.add(pol.getP2());
+        points.add(pol.getP3());
+
+        if (point.equals(new Point3D()))
+            point.move(pol.getP1());
     }
 
     @Override
-    public String toString() {
+    public String getString(int count) {
+
         StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        String splitter = SavedHelper.getStringSplitter(++count);
+
+        if (!point.equals(new Point3D()))
+            builder.append(splitter).append("startPoint=").append(point.getString(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append("color=").append(SavedHelper.getColorStr(color)).append("\n");
+            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
 
-        for (int i = 0; i < points.size(); i++)
-            builder.append("p").append(i).append("=").append(points.get(i)).append("\n");
+        for (Point3D p : points)
+            builder.append(splitter).append("point=").append(p.getString(count));
 
-        for (Polygon3D pol : polygons)
-            builder.append(pol).append("\n");
+        for (Polygon3D p : polygons)
+            builder.append(splitter).append("polygon=").append(p.getString(count));
 
+        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
         return builder.toString();
     }
 
@@ -101,53 +113,23 @@ public class Object3D extends Obj<Object3D> {
     public void setValue(String key, String value) {
         switch (key) {
             case "color" -> color = SavedHelper.getColor(value);
-            default -> throw new RuntimeException("Некорректное название переменной");
-        }
-    }
-
-    @Override
-    public void writeObject(String obj) {
-        String[] lines = obj.split("\n");
-
-        int count = 0;
-        for (; !lines[count].startsWith("p0"); count++) {
-            String[] val = lines[count].split("=");
-            setValue(val[0], val[1]);
-        }
-        for (; !lines[count].startsWith("["); count++) {
-            String p = lines[count].substring(lines[count].indexOf("=") + 1);
-            Point3D point = new Point3D();
-            point.writeObject(p);
-            points.add(point);
-        }
-        point = points.getFirst();
-        for (; count < lines.length; count++) {
-            Polygon3D polygon = new Polygon3D();
-            polygon.writeObject(lines[count]);
-
-            int index1 = points.indexOf(polygon.getP1());
-            if (index1 == -1) {
-                points.add(polygon.getP1());
-                index1 = points.size() - 1;
+            case "startPoint" -> {
+                Point3D p = new Point3D();
+                p.writeObject(value);
+                points.add(p);
+                this.point.move(p);
             }
-            polygon.setP1(points.get(index1));
-
-            int index2 = points.indexOf(polygon.getP2());
-            if (index2 == -1) {
-                points.add(polygon.getP2());
-                index2 = points.size() - 1;
+            case "point" -> {
+                Point3D p = new Point3D();
+                p.writeObject(value);
+                points.add(p);
             }
-            polygon.setP2(points.get(index2));
-
-            int index3 = points.indexOf(polygon.getP3());
-            if (index3 == -1) {
-                points.add(polygon.getP3());
-                index3 = points.size() - 1;
+            case "polygon" -> {
+                Polygon3D p = new Polygon3D();
+                p.writeObject(value);
+                addPolygon(p);
             }
-            polygon.setP3(points.get(index3));
-
-            polygon.setParent(this);
-            polygons.add(polygon);
+            default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }
 

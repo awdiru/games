@@ -3,12 +3,9 @@ package ru.avdonin.engine3d.rendering_panel.util;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 
-import javax.swing.*;
 import java.awt.*;
 
-import static javax.swing.WindowConstants.*;
-
-public abstract class Obj<T> implements Saved {
+public abstract class AbstractObject3D<T> implements Saved, Creatable {
     /**
      * Переместить к выбранной точке
      *
@@ -63,35 +60,4 @@ public abstract class Obj<T> implements Saved {
      * @return точка расположения объекта
      */
     public abstract Point3D getPoint();
-
-    /**
-     * Создать окно создания объекта
-     */
-    public abstract void getCreateFrame();
-
-    /**
-     * Создать базовый JFrame
-     *
-     * @return базовый JFrame
-     */
-    protected JFrame createFrame() {
-        JFrame frame = new JFrame();
-        frame.setPreferredSize(new Dimension(230, 300));
-        frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        return frame;
-    }
-
-    /**
-     * Создать базовый JPanel
-     *
-     * @return базовый JPanel
-     */
-    protected JPanel createPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        return panel;
-    }
 }

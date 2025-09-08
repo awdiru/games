@@ -1,30 +1,13 @@
-package ru.avdonin.engine3d.test_objects;
+package ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj;
 
-import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
+import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.TestObj;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Set;
 
-public class House extends Object3D {
-
-    public House() {
-        this(new Point3D(), 100);
-    }
-
-    public House(Point3D p, double size) {
-        this(p, size, Color.WHITE);
-    }
-
-    public House(Point3D p, double size, Color color) {
-        this.point = p;
-        this.points.add(point);
-        this.color = color;
-        initPolygons(size);
-    }
-
+public class House extends TestObj {
     /*
                p9
              /   \
@@ -40,8 +23,14 @@ public class House extends Object3D {
            p1__________p4
     */
 
-    private void initPolygons(double size) {
-        List<Point3D> points = initPoints(size);
+    @Override
+    public void openCreateFrame() {
+
+    }
+
+    @Override
+    protected Set<Polygon3D> initPolygons(Point3D p, double size) {
+        List<Point3D> points = initPoints(p, size);
         // передняя грань
         Polygon3D p1 = new Polygon3D(points.get(4), points.get(2), points.get(1));
         Polygon3D p2 = new Polygon3D(points.get(4), points.get(3), points.get(2));
@@ -68,14 +57,14 @@ public class House extends Object3D {
         // крыша сзади
         Polygon3D p16 = new Polygon3D(points.get(6), points.get(9), points.get(7));
 
-        Set<Polygon3D> polygons = Set.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
-        for (Polygon3D pol : polygons) addPolygon(pol);
+        return Set.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
     }
 
-    private List<Point3D> initPoints(double size) {
+    @Override
+    protected List<Point3D> initPoints(Point3D p, double size) {
         double s = size / 2;
 
-        Point3D p1 = new Point3D(point);
+        Point3D p1 = new Point3D(p);
         p1.move(new Point3D(p1.getX() - s, p1.getY() - s, p1.getZ() - s));
 
         Point3D p2 = new Point3D(p1);
@@ -105,6 +94,6 @@ public class House extends Object3D {
         Point3D p10 = new Point3D(p9);
         p10.move(new Point3D(p10.getX(), p10.getY(), p10.getZ() - size));
 
-        return List.of(point, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+        return List.of(p, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
     }
 }

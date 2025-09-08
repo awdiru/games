@@ -3,11 +3,11 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
 import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
-import ru.avdonin.engine3d.rendering_panel.util.Saved;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +15,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class Polygon3D extends Obj<Polygon3D> {
+public class Polygon3D extends AbstractObject3D<Polygon3D> {
     private Point3D p1;
     private Point3D p2;
     private Point3D p3;
@@ -80,9 +80,7 @@ public class Polygon3D extends Obj<Polygon3D> {
     }
 
     public Color getColor() {
-        if (parent == null)
-            return color;
-        return parent.getColor();
+        return parent == null ? color : parent.getColor();
     }
 
     @Override
@@ -91,11 +89,11 @@ public class Polygon3D extends Obj<Polygon3D> {
     }
 
     @Override
-    public void getCreateFrame() {
-        JFrame frame = createFrame();
+    public void openCreateFrame() {
+        JFrame frame = JFrameHelper.createFrame();
         frame.setTitle("New Polygon");
 
-        JPanel panel = createPanel();
+        JPanel panel = JFrameHelper.createPanel();
 
         CoordsPane coord1 = new CoordsPane();
         CoordsPane coord2 = new CoordsPane();
@@ -107,7 +105,7 @@ public class Polygon3D extends Obj<Polygon3D> {
             p2.move(MenuHelper.getPoint(coord2));
             p3.move(MenuHelper.getPoint(coord3));
             setColor(MenuHelper.getColor(color));
-            MenuHelper.saveObject("polygon", this);
+            SavedHelper.addObjectToScene("polygon", this);
             frame.dispose();
         });
 
@@ -126,18 +124,22 @@ public class Polygon3D extends Obj<Polygon3D> {
     }
 
     @Override
-    public String toString() {
+    public String getString(int count) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("[")
-                .append(p1.toString()).append(" ")
-                .append(p2.toString()).append(" ")
-                .append(p3.toString());
+        builder.append("[");
 
-        if(!color.equals(Color.WHITE))
-            builder.append(" ").append(SavedHelper.getColorStr(color));
+        String splitter = SavedHelper.getStringSplitter(++count);
+        builder.append(splitter).append("p1=").append(p1.getString(count))
+                .append(splitter).append("p2=").append(p2.getString(count))
+                .append(splitter).append("p3=").append(p3.getString(count));
 
-        builder.append(" ").append(isReflection).append("]");
+        if (!color.equals(Color.WHITE))
+            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+
+        builder.append(splitter).append("isReflection=[").append(isReflection).append("]")
+                .append(SavedHelper.getStringSplitter(--count)).append("]");
+
         return builder.toString();
     }
 
@@ -149,45 +151,7 @@ public class Polygon3D extends Obj<Polygon3D> {
             case "p3" -> p3.writeObject(value);
             case "color" -> color = SavedHelper.getColor(value);
             case "isReflection" -> isReflection = Boolean.parseBoolean(value);
-            default -> throw new RuntimeException("Некорректное название переменной");
-        }
-    }
-
-    @Override
-    public void writeObject(String obj) {
-        String[] arr = obj.split("\n");
-        if (arr.length != 1)
-            throw new RuntimeException("Некорректная запись");
-        String pol = arr[0];
-        if (!pol.startsWith("[") || !pol.endsWith("]"))
-            throw new RuntimeException("Некорректная запись");
-
-        String str = pol.substring(1, pol.length() - 1);
-
-        String p = SavedHelper.getSubString(str, '(', ')');
-        if (p != null && !p.isBlank()) {
-            setValue("p1", p);
-            str = str.substring(p.length() + 1);
-        }
-        p = SavedHelper.getSubString(str, '(', ')');
-        if (p != null && !p.isBlank()) {
-            setValue("p2", p);
-            str = str.substring(p.length() + 1);
-        }
-        p = SavedHelper.getSubString(str, '(', ')');
-        if (p != null && !p.isBlank()) {
-            setValue("p3", p);
-            str = str.substring(p.length() + 1);
-        }
-        p = SavedHelper.getSubString(str, '[', ']');
-        if (p != null && !p.isBlank()) {
-            setValue("color", p);
-            str = str.substring(p.length() + 1);
-        }
-        p = str;
-        if (!p.isBlank()) {
-            p = p.substring(1, p.length() - 1);
-            setValue("isReflection", p);
+            default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }
 

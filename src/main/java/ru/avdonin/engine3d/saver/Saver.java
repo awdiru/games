@@ -2,8 +2,9 @@ package ru.avdonin.engine3d.saver;
 
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
+import ru.avdonin.engine3d.rendering_panel.util.Creatable;
 import ru.avdonin.engine3d.storage.SceneStorage;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.*;
 
 import java.io.BufferedWriter;
@@ -38,11 +39,12 @@ public class Saver {
 
     public static void openObject(String path, SceneStorage storage) throws IOException {
         List<String> lines = Files.readAllLines(Path.of(path));
-        Obj<?> obj = getObj(lines.getFirst());
+        AbstractObject3D<?> obj = Creatable.newInstance(lines.getFirst());
 
         StringBuilder builder = new StringBuilder();
-        for (int i = 1; i < lines.size(); i++)
-            builder.append(lines.get(i)).append("\n");
+        builder.append(lines.get(1));
+        for (int i = 2; i < lines.size(); i++)
+            builder.append("\n").append(lines.get(i));
 
         obj.writeObject(builder.toString());
         storage.add(getName(path), obj);
@@ -58,9 +60,9 @@ public class Saver {
             Files.createDirectories(Path.of(objectsPath));
 
             try (BufferedWriter writer = Files.newBufferedWriter(scenePath)) {
-                for (Map.Entry<String, Obj<?>> entry : getStorage().getObjects().entrySet()) {
+                for (Map.Entry<String, AbstractObject3D<?>> entry : getStorage().getObjects().entrySet()) {
                     String objName = entry.getKey();
-                    Obj<?> obj = entry.getValue();
+                    AbstractObject3D<?> obj = entry.getValue();
                     String fileName = saveObject(objectsPath, objName, obj);
                     writer.write(fileName);
                     writer.newLine();
@@ -74,47 +76,16 @@ public class Saver {
         }
     }
 
-    public static String saveObject(String path, String name, Obj<?> obj) {
+    public static String saveObject(String path, String name, AbstractObject3D<?> obj) {
         String fullName = (path.endsWith("/") ? path : path + "/") + name + OBJ_FILE_EXTENSION;
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fullName))) {
-            writer.write(getObjName(obj));
+            writer.write(obj.getClass().getName());
             writer.newLine();
-            writer.write(obj.toString());
+            writer.write(obj.getString(0));
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения объекта " + fullName, e);
         }
         return fullName;
-    }
-
-    private static String getObjName(Obj<?> o) {
-        if (o instanceof Light3D)
-            return "Light3D";
-        else if (o instanceof Camera3D)
-            return "Camera3D";
-        else if (o instanceof Vector3D)
-            return "Vector3D";
-        else if (o instanceof Edge3D)
-            return "Edge3D";
-        else if (o instanceof Polygon3D)
-            return "Polygon3D";
-        else if (o instanceof Point3D)
-            return "Point3D";
-        else if (o instanceof Object3D)
-            return "Object3D";
-        throw new RuntimeException("Неизвестный класс объекта");
-    }
-
-    private static Obj<?> getObj(String name) {
-        return switch (name) {
-            case "Light3D" -> new Light3D();
-            case "Camera3D" -> new Camera3D();
-            case "Vector3D" -> new Vector3D();
-            case "Edge3D" -> new Edge3D();
-            case "Polygon3D" -> new Polygon3D();
-            case "Point3D" -> new Point3D();
-            case "Object3D" -> new Object3D();
-            default -> throw new RuntimeException("Неизвестный тип объекта");
-        };
     }
 
     private static String getName(String path) {

@@ -20,10 +20,10 @@ public class RenderHelper {
      * @return интенсивность падающего на полигон света
      */
     public static double computeIntensityLight(int minIntensity, Polygon3D polygon, Light3D light) {
-        Point3D pCenter = UtilHelper.getCenterPolygon(polygon);
-        Vector3D pn = UtilHelper.getNormalVector(UtilHelper.getNormal(polygon));
+        Point3D pCenter = VectorHelper.getCenterPolygon(polygon);
+        Vector3D pn = VectorHelper.getNormalVector(VectorHelper.getNormal(polygon));
         Vector3D l = new Vector3D(light.getPoint(), pCenter);
-        double angle = UtilHelper.getAngleRad(pn, l);
+        double angle = VectorHelper.getAngleRad(pn, l);
         return Math.max(minIntensity, Math.cos(angle) * light.getIntensity());
     }
 
@@ -37,7 +37,7 @@ public class RenderHelper {
         SceneStorage sceneStorage = Context.get(Constants.STORAGE_KEY);
         double intensity = 0;
         for (Light3D l : sceneStorage.getLights().values()) {
-            double distance = UtilHelper.getLength(UtilHelper.getCenterPolygon(polygon), l.getPoint()) / 100;
+            double distance = VectorHelper.getLength(VectorHelper.getCenterPolygon(polygon), l.getPoint()) / 100;
             intensity += computeIntensityLight(sceneStorage.getLights().size() * 10, polygon, l) / distance;
         }
         if (intensity > 255) intensity = 255;

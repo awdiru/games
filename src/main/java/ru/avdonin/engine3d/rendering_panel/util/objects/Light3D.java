@@ -3,20 +3,20 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
+import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
 import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
-import ru.avdonin.engine3d.menu_panels.left.helpers.UtilHelper;
-import ru.avdonin.engine3d.rendering_panel.util.Obj;
-import ru.avdonin.engine3d.rendering_panel.util.Saved;
+import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class Light3D extends Obj<Light3D> {
+public class Light3D extends AbstractObject3D<Light3D> {
     public final static Point3D DEFAULT_POINT = new Point3D();
     public final static Vector3D DEFAULT_VECTOR = new Vector3D(0, 0, 1);
     public final static int DEFAULT_INTENSITY = 500;
@@ -50,7 +50,7 @@ public class Light3D extends Obj<Light3D> {
         this.point.move(start);
         this.intensity = intensity;
         this.angle = angle;
-        this.vector = UtilHelper.getNormalVector(vector);
+        this.vector = VectorHelper.getNormalVector(vector);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class Light3D extends Obj<Light3D> {
     }
 
     public void setVector(Vector3D vector) {
-        this.vector = UtilHelper.getNormalVector(vector);
+        this.vector = VectorHelper.getNormalVector(vector);
     }
 
     public void setAngleRad(double angle) {
@@ -95,23 +95,28 @@ public class Light3D extends Obj<Light3D> {
     }
 
     @Override
-    public String toString() {
+    public String getString(int count) {
         StringBuilder builder = new StringBuilder();
+
+        builder.append("[");
+        String splitter = SavedHelper.getStringSplitter(++count);
+
         if (!point.equals(DEFAULT_POINT))
-            builder.append("point=").append(point).append("\n");
+            builder.append(splitter).append("point=").append(point.getString(count));
 
         if (!vector.equals(DEFAULT_VECTOR))
-            builder.append("vector=").append(vector).append("\n");
+            builder.append(splitter).append("vector=").append(vector.getString(count));
 
         if (intensity != DEFAULT_INTENSITY)
-            builder.append("intensity=").append(intensity).append("\n");
+            builder.append(splitter).append("intensity=[").append(intensity).append("]");
 
         if (angle != DEFAULT_ANGLE)
-            builder.append("angle=").append(angle).append("\n");
+            builder.append(splitter).append("angle=[").append(angle).append("]");
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
 
+        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
         return builder.toString();
     }
 
@@ -120,30 +125,19 @@ public class Light3D extends Obj<Light3D> {
         switch (key) {
             case "point" -> point.writeObject(value);
             case "vector" -> vector.writeObject(value);
-            case "intensity" -> intensity = Integer.parseInt(value);
-            case "angle" -> angle = Double.parseDouble(value);
+            case "intensity" -> intensity = Integer.parseInt(value.substring(1, value.length() - 1));
+            case "angle" -> angle = Double.parseDouble(value.substring(1, value.length() - 1));
             case "color" -> color = SavedHelper.getColor(value);
-            default -> throw new RuntimeException("Некорректное название переменной");
+            default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }
 
     @Override
-    public void writeObject(String obj) {
-        String[] lines = obj.split("\n");
-
-        for (String line : lines) {
-            String[] l = line.split("=");
-            setValue(l[0], l[1]);
-        }
-    }
-
-
-    @Override
-    public void getCreateFrame() {
-        JFrame frame = createFrame();
+    public void openCreateFrame() {
+        JFrame frame = JFrameHelper.createFrame();
         frame.setTitle("New Light");
 
-        JPanel panel = createPanel();
+        JPanel panel = JFrameHelper.createPanel();
         CoordsPane p = new CoordsPane();
         CoordsPane v = new CoordsPane();
         ColorsPane c = new ColorsPane();
@@ -160,7 +154,7 @@ public class Light3D extends Obj<Light3D> {
             double intensity = i.getValue();
             this.intensity = (int) intensity;
 
-            MenuHelper.saveObject("Light", this);
+            SavedHelper.addObjectToScene("Light", this);
             frame.dispose();
         });
 
