@@ -2,15 +2,14 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
-import ru.avdonin.engine3d.saver.Saver;
 
 import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class Camera3D extends AbstractObject3D<Camera3D> {
+public class Camera3D extends AbstractObject3D<Camera3D>{
     public final static Basis DEFAULT_BASIS = new Basis();
     public final static double DEFAULT_ZOOM = 1;
     public final static double DEFAULT_VIEWING_ANGLE = Math.PI / 2;
@@ -21,7 +20,7 @@ public class Camera3D extends AbstractObject3D<Camera3D> {
     private double viewingAngle = DEFAULT_VIEWING_ANGLE;
 
     public Camera3D() {
-        this.basis = DEFAULT_BASIS;
+        this.basis = new Basis(DEFAULT_BASIS);
     }
 
     public Camera3D(Point3D p, Vector3D v) {
@@ -32,15 +31,22 @@ public class Camera3D extends AbstractObject3D<Camera3D> {
         this.basis = new Basis(v.getStart(), v);
     }
 
+    public Camera3D(Camera3D camera3D) {
+        this.basis = new Basis(camera3D.basis);
+        this.zoom = camera3D.zoom;
+        this.viewingAngle = camera3D.viewingAngle;
+    }
+
     @Override
     public void move(Point3D p) {
         this.basis.move(p);
     }
 
     @Override
-    public void move(Camera3D camera3D) {
-        Point3D point = camera3D.getPoint();
-        move(point);
+    public void copyOf(Camera3D camera3D) {
+        basis.copyOf(camera3D.basis);
+        zoom = camera3D.zoom;
+        viewingAngle = camera3D.viewingAngle;
     }
 
     @Override
@@ -91,22 +97,23 @@ public class Camera3D extends AbstractObject3D<Camera3D> {
     }
 
     @Override
-    public String getString(int count) {
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
-        String splitter = SavedHelper.getStringSplitter(++count);
         if (!basis.equals(DEFAULT_BASIS))
-            builder.append(splitter).append("basis=").append(basis.getString(count));
+            builder.append(nextIndent).append("basis=").append(basis.serialize(count));
 
         if (zoom != DEFAULT_ZOOM)
-            builder.append(splitter).append("zoom=[").append(zoom).append("]");
+            builder.append(nextIndent).append("zoom=[").append(zoom).append("]");
 
         if (viewingAngle != DEFAULT_VIEWING_ANGLE)
-            builder.append(splitter).append("viewingAngle=[").append(viewingAngle).append("]");
+            builder.append(nextIndent).append("viewingAngle=[").append(viewingAngle).append("]");
 
-        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(indent).append("]");
         return builder.toString();
     }
 

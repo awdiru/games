@@ -14,11 +14,11 @@ public abstract class AbstractObject3D<T> implements Saved, Creatable {
     public abstract void move(Point3D p);
 
     /**
-     * Переместить к выбранному объекту
+     * Скопировать выбранный объект
      *
      * @param t целевой объект
      */
-    public abstract void move(T t);
+    public abstract void copyOf(T t);
 
     /**
      * Сдвинуть объект на вектор

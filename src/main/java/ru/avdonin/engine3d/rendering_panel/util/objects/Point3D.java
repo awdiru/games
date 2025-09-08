@@ -2,9 +2,9 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.MenuHelper;
+import ru.avdonin.engine3d.helpers.JFrameHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
@@ -41,6 +41,11 @@ public class Point3D extends AbstractObject3D<Point3D> {
         this.x = p.x;
         this.y = p.y;
         this.z = p.z;
+    }
+
+    @Override
+    public void copyOf(Point3D point3D) {
+        move(point3D);
     }
 
     @Override
@@ -90,7 +95,7 @@ public class Point3D extends AbstractObject3D<Point3D> {
     }
 
     @Override
-    public String getString (int count) {
+    public String serialize(int count) {
         String str = "[" + x + ", " + y + ", " + z;
         return color.equals(Color.WHITE) ? str + "]"
                 : str + ", " + SavedHelper.getColorStr(color) + "]";

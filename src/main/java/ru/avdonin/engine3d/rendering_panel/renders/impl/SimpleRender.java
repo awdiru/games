@@ -6,9 +6,9 @@ import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.rendering_panel.buffer.FrameBuffer;
 import ru.avdonin.engine3d.rendering_panel.buffer.ZBuffer;
-import ru.avdonin.engine3d.menu_panels.left.helpers.BufferHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.RenderHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
+import ru.avdonin.engine3d.helpers.BufferHelper;
+import ru.avdonin.engine3d.helpers.RenderHelper;
+import ru.avdonin.engine3d.helpers.VectorHelper;
 import ru.avdonin.engine3d.rendering_panel.renders.Render;
 import ru.avdonin.engine3d.storage.SceneStorage;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
@@ -17,6 +17,10 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Getter
 @Setter
@@ -24,6 +28,7 @@ public class SimpleRender extends Render {
     private static final double DEPTH_EPSILON = 1e-5;
     private final ZBuffer zBuffer = new ZBuffer();
     private final FrameBuffer frameBuffer = new FrameBuffer();
+    private ExecutorService executorService;
 
     public SimpleRender() {
         this(1280, 720);
@@ -31,6 +36,7 @@ public class SimpleRender extends Render {
 
     public SimpleRender(int width, int height) {
         setSize(new Dimension(width, height));
+        executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     @Override
@@ -41,22 +47,32 @@ public class SimpleRender extends Render {
         zBuffer.clearZBuffer();
         frameBuffer.clearBuffer();
 
+        List<Callable<Void>> tasks = new ArrayList<>();
         for (Map.Entry<String, AbstractObject3D<?>> entry : storage.getObjects().entrySet()) {
             String name = entry.getKey();
             AbstractObject3D<?> obj = entry.getValue();
-            if (obj instanceof Light3D o)
-                renderLight(o);
-            else if (obj instanceof Point3D o)
-                renderPoint(o);
-            else if (obj instanceof Vector3D o)
-                renderVector(o);
-            else if (obj instanceof Edge3D o)
-                renderLine(o);
-            else if (obj instanceof Polygon3D o)
-                renderPolygon(o);
-            else if (obj instanceof Object3D o)
-                for (Polygon3D polygon : o.getPolygons())
-                    renderPolygon(polygon);
+            tasks.add(() -> {
+                if (obj instanceof Light3D o)
+                    renderLight(o);
+                else if (obj instanceof Point3D o)
+                    renderPoint(o);
+                else if (obj instanceof Vector3D o)
+                    renderVector(o);
+                else if (obj instanceof Edge3D o)
+                    renderLine(o);
+                else if (obj instanceof Polygon3D o)
+                    renderPolygon(o);
+                else if (obj instanceof Object3D o)
+                    for (Polygon3D polygon : o.getPolygons())
+                        renderPolygon(polygon);
+                return null;
+            });
+        }
+
+        try {
+            executorService.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
 
         drawFrameBuffer((Graphics2D) g);
@@ -236,11 +252,25 @@ public class SimpleRender extends Render {
         Point3D dottedEnd = new Point3D(point.getX(), 0, point.getZ());
         Color dottedColor = new Color(27, 27, 27);
         renderDottedLine3D(point, dottedEnd, dottedColor, 20);
+        Vector3D left = VectorHelper.changeLenVector(camera.getBasis().getVectorX(), 10);
+        Vector3D right = VectorHelper.changeLenVector(camera.getBasis().getVectorX(), 10);
+        right = new Vector3D(right.getEnd(), right.getStart());
 
-        Point3D d1 = new Point3D(dottedEnd.getX() - 10, dottedEnd.getY() - 10, dottedEnd.getZ());
-        Point3D d2 = new Point3D(dottedEnd.getX() + 10, dottedEnd.getY() + 10, dottedEnd.getZ());
-        Point3D d3 = new Point3D(dottedEnd.getX() - 10, dottedEnd.getY() + 10, dottedEnd.getZ());
-        Point3D d4 = new Point3D(dottedEnd.getX() + 10, dottedEnd.getY() - 10, dottedEnd.getZ());
+        Point3D d1 = new Point3D(dottedEnd);
+        d1.translate(new Vector3D(0, 10, 0));
+        d1.translate(left);
+
+        Point3D d2 = new Point3D(dottedEnd);
+        d2.translate(new Vector3D(0, -10, 0));
+        d2.translate(right);
+
+        Point3D d3 = new Point3D(dottedEnd);
+        d3.translate(new Vector3D(0, -10, 0));
+        d3.translate(left);
+
+        Point3D d4 = new Point3D(dottedEnd);
+        d4.translate(new Vector3D(0, 10, 0));
+        d4.translate(right);
 
         renderLine3D(d1, d2, dottedColor);
         renderLine3D(d3, d4, dottedColor);

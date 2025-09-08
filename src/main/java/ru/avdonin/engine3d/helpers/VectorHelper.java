@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.menu_panels.left.helpers;
+package ru.avdonin.engine3d.helpers;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Edge3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;

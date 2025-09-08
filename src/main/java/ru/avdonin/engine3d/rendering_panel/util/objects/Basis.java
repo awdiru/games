@@ -1,8 +1,8 @@
 package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.VectorHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import java.awt.*;
@@ -22,8 +22,15 @@ public class Basis extends AbstractObject3D<Basis> {
         this(DEFAULT_POINT, DEFAULT_VECTOR_Z);
     }
 
+    public Basis(Basis basis) {
+        this.point = new Point3D(basis.point);
+        this.vectorX = new Vector3D(basis.vectorX);
+        this.vectorY = new Vector3D(basis.vectorY);
+        this.vectorZ = new Vector3D(basis.vectorZ);
+    }
+
     public Basis(Point3D point, Vector3D vectorZ) {
-        this.point = point;
+        this.point = new Point3D(point);
         this.vectorX = new Vector3D();
         this.vectorY = new Vector3D();
         this.vectorZ = VectorHelper.getNormalVector(vectorZ);
@@ -38,9 +45,11 @@ public class Basis extends AbstractObject3D<Basis> {
     }
 
     @Override
-    public void move(Basis basis) {
-        Point3D point = basis.getPoint();
-        this.point.move(point);
+    public void copyOf(Basis basis) {
+        point.move(basis.point);
+        vectorX.copyOf(basis.vectorX);
+        vectorY.copyOf(basis.vectorY);
+        vectorZ.copyOf(basis.vectorZ);
     }
 
     @Override
@@ -62,19 +71,20 @@ public class Basis extends AbstractObject3D<Basis> {
     }
 
     @Override
-    public String getString(int count) {
-        StringBuilder builder = new StringBuilder();
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
+        StringBuilder builder = new StringBuilder();
         builder.append("[");
-        String splitter = SavedHelper.getStringSplitter(++count);
 
         if (!getPoint().equals(DEFAULT_POINT))
-            builder.append(splitter).append("point=").append(point.getString(count));
+            builder.append(nextIndent).append("point=").append(point.serialize(count));
 
         if (!vectorZ.equals(DEFAULT_VECTOR_Z))
-            builder.append(splitter).append("vectorZ=").append(vectorZ.getString(count));
+            builder.append(nextIndent).append("vectorZ=").append(vectorZ.serialize(count));
 
-        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(indent).append("]");
 
         return builder.toString();
     }
@@ -86,7 +96,7 @@ public class Basis extends AbstractObject3D<Basis> {
             case "vectorZ" -> {
                 Vector3D vector = new Vector3D();
                 vector.writeObject(value);
-                this.vectorZ.move(VectorHelper.getNormalVector(vector));
+                this.vectorZ.translate(VectorHelper.getNormalVector(vector));
                 computeVectorX();
                 computeVectorY();
             }
@@ -104,7 +114,7 @@ public class Basis extends AbstractObject3D<Basis> {
         double zx = Math.cos(angle);
 
         Vector3D vectorX = VectorHelper.getNormalVector(new Vector3D(xx, yx, zx));
-        this.vectorX.move(vectorX);
+        this.vectorX.copyOf(vectorX);
     }
 
     private void computeVectorY() {
@@ -121,22 +131,22 @@ public class Basis extends AbstractObject3D<Basis> {
         double zy = xz * yx - yz * xx;
 
         Vector3D vectorY = VectorHelper.getNormalVector(new Vector3D(xy, yy, zy));
-        this.vectorY.move(vectorY);
+        this.vectorY.copyOf(vectorY);
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         Basis basis = (Basis) o;
-        return Objects.equals(vectorX, basis.vectorX)
+        return Objects.equals(point, basis.point)
+                && Objects.equals(vectorX, basis.vectorX)
                 && Objects.equals(vectorY, basis.vectorY)
                 && Objects.equals(vectorZ, basis.vectorZ);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), vectorX, vectorY, vectorZ);
+        return Objects.hash(point, vectorX, vectorY, vectorZ);
     }
 
     @Override

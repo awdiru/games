@@ -2,7 +2,7 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import java.awt.*;
@@ -24,6 +24,7 @@ public class Object3D extends AbstractObject3D<Object3D> {
 
     public Object3D(Object3D o) {
         this.points.add(point);
+        this.color = o.color;
         for(Polygon3D p : o.polygons) addPolygon(new Polygon3D(p));
     }
 
@@ -47,9 +48,18 @@ public class Object3D extends AbstractObject3D<Object3D> {
     }
 
     @Override
-    public void move(Object3D object3D) {
-        Point3D point = object3D.getPoint();
-        this.move(point);
+    public void copyOf(Object3D object3D) {
+        point.copyOf(object3D.point);
+
+        points.clear();
+        for (Point3D point : object3D.points)
+            points.add(new Point3D(point));
+
+        polygons.clear();
+        for (Polygon3D polygon : object3D.polygons)
+            addPolygon(polygon);
+
+        color = object3D.color;
     }
 
     @Override
@@ -87,25 +97,26 @@ public class Object3D extends AbstractObject3D<Object3D> {
     }
 
     @Override
-    public String getString(int count) {
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        String splitter = SavedHelper.getStringSplitter(++count);
-
-        if (!point.equals(new Point3D()))
-            builder.append(splitter).append("startPoint=").append(point.getString(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
+
+        if (!point.equals(new Point3D()))
+            builder.append(nextIndent).append("startPoint=").append(point.serialize(count));
 
         for (Point3D p : points)
-            builder.append(splitter).append("point=").append(p.getString(count));
+            builder.append(nextIndent).append("point=").append(p.serialize(count));
 
         for (Polygon3D p : polygons)
-            builder.append(splitter).append("polygon=").append(p.getString(count));
+            builder.append(nextIndent).append("polygon=").append(p.serialize(count));
 
-        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(indent).append("]");
         return builder.toString();
     }
 

@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.menu_panels.left.helpers;
+package ru.avdonin.engine3d.helpers;
 
 import javax.swing.*;
 import java.awt.*;

@@ -2,13 +2,13 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.MenuHelper;
+import ru.avdonin.engine3d.helpers.JFrameHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
-import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
+import ru.avdonin.engine3d.helpers.VectorHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -46,6 +46,14 @@ public class Light3D extends AbstractObject3D<Light3D> {
         this(start, intensity, angle, DEFAULT_VECTOR);
     }
 
+    public Light3D(Light3D light3D) {
+        point.copyOf(light3D.point);
+        vector.copyOf(light3D.vector);
+        intensity = light3D.intensity;
+        color = light3D.color;
+        angle = light3D.angle;
+    }
+
     public Light3D(Point3D start, int intensity, double angle, Vector3D vector) {
         this.point.move(start);
         this.intensity = intensity;
@@ -60,9 +68,12 @@ public class Light3D extends AbstractObject3D<Light3D> {
     }
 
     @Override
-    public void move(Light3D light3D) {
-        Point3D point = light3D.getPoint();
-        this.point.move(point);
+    public void copyOf(Light3D light3D) {
+        point.copyOf(light3D.point);
+        vector.copyOf(light3D.vector);
+        intensity = light3D.intensity;
+        color = light3D.color;
+        angle = light3D.angle;
     }
 
     @Override
@@ -95,28 +106,29 @@ public class Light3D extends AbstractObject3D<Light3D> {
     }
 
     @Override
-    public String getString(int count) {
-        StringBuilder builder = new StringBuilder();
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
+        StringBuilder builder = new StringBuilder();
         builder.append("[");
-        String splitter = SavedHelper.getStringSplitter(++count);
 
         if (!point.equals(DEFAULT_POINT))
-            builder.append(splitter).append("point=").append(point.getString(count));
+            builder.append(nextIndent).append("point=").append(point.serialize(count));
 
         if (!vector.equals(DEFAULT_VECTOR))
-            builder.append(splitter).append("vector=").append(vector.getString(count));
+            builder.append(nextIndent).append("vector=").append(vector.serialize(count));
 
         if (intensity != DEFAULT_INTENSITY)
-            builder.append(splitter).append("intensity=[").append(intensity).append("]");
+            builder.append(nextIndent).append("intensity=[").append(intensity).append("]");
 
         if (angle != DEFAULT_ANGLE)
-            builder.append(splitter).append("angle=[").append(angle).append("]");
+            builder.append(nextIndent).append("angle=[").append(angle).append("]");
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
 
-        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(indent).append("]");
         return builder.toString();
     }
 

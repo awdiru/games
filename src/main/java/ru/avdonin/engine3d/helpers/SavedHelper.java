@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.menu_panels.left.helpers;
+package ru.avdonin.engine3d.helpers;
 
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
@@ -11,11 +11,25 @@ import java.util.List;
 public class SavedHelper {
 
     /**
-     * Сохранить объект на сцене
+     * Сохранить объект в сцену
      *
      * @param name имя объекта
+     * @param obj  сохраняемы объект
      */
     public static void addObjectToScene(String name, AbstractObject3D<?> obj) {
+        validateNameObject(name);
+        SceneStorage storage = Context.get(Constants.STORAGE_KEY);
+        int size = storage.getObjects().size();
+        storage.add(name + size, obj);
+    }
+
+    /**
+     * Сохранить объект в сцену
+     *
+     * @param obj сохраняемы объект
+     */
+    public static void addObjectToScene(AbstractObject3D<?> obj) {
+        String name = obj.getClass().getSimpleName();
         validateNameObject(name);
         SceneStorage storage = Context.get(Constants.STORAGE_KEY);
         int size = storage.getObjects().size();
@@ -31,7 +45,7 @@ public class SavedHelper {
         List<String> chars = List.of("[", "]", ",", ".", " ");
         for (String s : chars) {
             if (name.contains(s))
-                throw new RuntimeException("Имя объекта " + name + " содержит недопустимый символ " + s);
+                throw new RuntimeException("Имя объекта " + name + " содержит недопустимый символ '" + s + "'");
         }
     }
 
@@ -87,7 +101,7 @@ public class SavedHelper {
         int green = color.getGreen();
         int blue = color.getBlue();
         int alpha = color.getAlpha();
-        return "[" + red + " " + green + " " + blue + " " + alpha + "]";
+        return "[" + red + ", " + green + ", " + blue + ", " + alpha + "]";
     }
 
     /**
@@ -107,7 +121,7 @@ public class SavedHelper {
             throw new RuntimeException("Некорректная запись");
 
         String s = c.substring(1, c.length() - 1);
-        String[] array = s.split(" ");
+        String[] array = s.split(", ");
 
         if (array.length != 4)
             throw new RuntimeException("Некорректная запись");
@@ -120,6 +134,12 @@ public class SavedHelper {
         return new Color(red, green, blue, alpha);
     }
 
+    /**
+     * Вернуть отступ по уровню вложенности
+     *
+     * @param count уровень вложенности
+     * @return отступ
+     */
     public static String getStringSplitter(int count) {
         return "\n" + "\t".repeat(count);
     }

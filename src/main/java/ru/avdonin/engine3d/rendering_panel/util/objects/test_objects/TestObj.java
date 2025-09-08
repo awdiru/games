@@ -1,8 +1,8 @@
 package ru.avdonin.engine3d.rendering_panel.util.objects.test_objects;
 
-import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.JFrameHelper;
+import ru.avdonin.engine3d.helpers.MenuHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
@@ -37,6 +37,7 @@ public abstract class TestObj implements Creatable {
         return obj;
     }
 
+    @Override
     public void openCreateFrame() {
         JFrame frame = JFrameHelper.createFrame();
 

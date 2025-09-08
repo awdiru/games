@@ -1,10 +1,17 @@
 package ru.avdonin.engine3d.rendering_panel.util;
 
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 
 public interface Saved {
 
-    String getString(int count);
+    /**
+     * Возвращает сериализованное строковое представление объекта с учетом уровня вложенности
+     *
+     * @param count уровень вложенности
+     * @return сериализованное строковое представление объекта
+     */
+    String serialize(int count);
+
     /**
      * Изменить значение переменной
      *
@@ -24,19 +31,25 @@ public interface Saved {
 
         String str = obj.substring(1, obj.length() - 1);
         while (true) {
+            if (str.isBlank()) return;
+
             String key = SavedHelper.getNameObject(str);
             String value = SavedHelper.getStrObject(str);
 
-            if(key.isBlank() || value.isBlank())
+            if (key.isBlank() || value.isBlank())
                 throw new RuntimeException("Некорректная запись\n" + obj);
 
             setValue(key, value);
-
             int size = key.length() + value.length() + 2;
-            str = str.strip();
-            if (str.length() < size) return;
-            str = str.substring(size);
-            if (str.isBlank()) return;
+            str = getStr(str,  size);
         }
+    }
+
+    private String getStr(String str, int size) {
+        str = str.strip();
+        if (str.length() < size) return "";
+        str = str.substring(size);
+        if (str.isBlank()) return "";
+        return str;
     }
 }

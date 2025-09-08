@@ -2,12 +2,12 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.MenuHelper;
+import ru.avdonin.engine3d.helpers.JFrameHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.menu_panels.left.helpers.VectorHelper;
+import ru.avdonin.engine3d.helpers.VectorHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -29,7 +29,7 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
     }
 
     public Edge3D(Edge3D e) {
-        this(e.p1, e.p2);
+        this(new Point3D(e.p1), new Point3D(e.p2));
     }
 
     public Edge3D(Point3D p1, Point3D p2) {
@@ -44,9 +44,10 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
     }
 
     @Override
-    public void move(Edge3D e) {
-        this.p1.move(e.p1);
-        this.p2.move(e.p2);
+    public void copyOf(Edge3D edge3D) {
+        p1.move(edge3D.p1);
+        p2.move(edge3D.p2);
+        color = edge3D.color;
     }
 
     @Override
@@ -105,20 +106,21 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
     }
 
     @Override
-    public String getString (int count) {
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
-        String splitter = SavedHelper.getStringSplitter(++count);
         if (!p1.equals(new Point3D()) && !p2.equals(new Point3D()))
-            builder.append(splitter).append("p1=").append(p1.getString(count))
-                    .append(splitter).append("p2=").append(p2.getString(count));
+            builder.append(nextIndent).append("p1=").append(p1.serialize(count))
+                    .append(nextIndent).append("p2=").append(p2.serialize(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
 
-        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(indent).append("]");
         return builder.toString();
     }
 

@@ -1,6 +1,6 @@
 package ru.avdonin.engine3d.rendering_panel.util.objects;
 
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 
 public class Vector3D extends Edge3D {
     public Vector3D() {
@@ -47,21 +47,22 @@ public class Vector3D extends Edge3D {
     }
 
     @Override
-    public String getString(int count) {
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
-        String splitter = SavedHelper.getStringSplitter(++count);
         if (!getStart().equals(new Point3D()))
-                    builder.append(splitter).append("start=").append(p1.getString(count));
+                    builder.append(nextIndent).append("start=").append(p1.serialize(count));
 
-        builder.append(splitter).append("end=").append(p2.getString(count));
+        builder.append(nextIndent).append("end=").append(p2.serialize(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
 
-        builder.append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(indent).append("]");
         return builder.toString();
     }
 

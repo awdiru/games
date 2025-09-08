@@ -5,10 +5,10 @@ import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.rendering_panel.util.Creatable;
 import ru.avdonin.engine3d.storage.SceneStorage;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
-import ru.avdonin.engine3d.rendering_panel.util.objects.*;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -52,11 +52,12 @@ public class Saver {
 
     public static void saveScene(String path, String name) {
         try {
-            String p = path.endsWith("/") ? path : path + "/";
+            String p = (path.endsWith("/") ? path : path + "/") + "scene/";
             String objectsPath = p + "objects/";
             Path scenePath = Path.of(p + name + SCENE_FILE_EXTENSION);
 
             Files.createDirectories(scenePath.getParent());
+            clearDirectory(scenePath.getParent());
             Files.createDirectories(Path.of(objectsPath));
 
             try (BufferedWriter writer = Files.newBufferedWriter(scenePath)) {
@@ -81,7 +82,7 @@ public class Saver {
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fullName))) {
             writer.write(obj.getClass().getName());
             writer.newLine();
-            writer.write(obj.getString(0));
+            writer.write(obj.serialize(0));
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения объекта " + fullName, e);
         }
@@ -92,6 +93,22 @@ public class Saver {
         String[] p = path.split("/");
         String fileName = p[p.length - 1];
         return fileName.substring(0, fileName.lastIndexOf("."));
+    }
+
+    private static void clearDirectory(Path directory) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path file : stream) {
+                if (Files.isRegularFile(file)) {
+                    try {
+                        Files.delete(file);
+                    } catch (IOException e) {
+                        System.err.println("Ошибка при удалении " + file + ": " + e.getMessage());
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при удалении", e);
+        }
     }
 
     public static SceneStorage getStorage() {

@@ -24,11 +24,6 @@ public class House extends TestObj {
     */
 
     @Override
-    public void openCreateFrame() {
-
-    }
-
-    @Override
     protected Set<Polygon3D> initPolygons(Point3D p, double size) {
         List<Point3D> points = initPoints(p, size);
         // передняя грань

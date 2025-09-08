@@ -2,9 +2,9 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.menu_panels.left.helpers.MenuHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.JFrameHelper;
-import ru.avdonin.engine3d.menu_panels.left.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.MenuHelper;
+import ru.avdonin.engine3d.helpers.JFrameHelper;
+import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
 import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
@@ -26,22 +26,24 @@ public class Polygon3D extends AbstractObject3D<Polygon3D> {
 
     private boolean isReflection = false;
 
-    private Object3D parent;
+    private AbstractObject3D<?> parent;
 
-    private Color color = Color.WHITE;
+    private Color color = null;
 
     public Polygon3D() {
         this(new Point3D(), new Point3D(), new Point3D());
     }
 
     public Polygon3D(Polygon3D pol) {
-        this(pol.p1, pol.p2, pol.p3);
+        this(new Point3D(pol.p1),
+                new Point3D(pol.p2),
+                new Point3D(pol.p3));
     }
 
     public Polygon3D(Point3D p1, Point3D p2, Point3D p3) {
-        this.p1 = p1;
-        this.p2 = p2;
-        this.p3 = p3;
+        this.p1 = (p1);
+        this.p2 = (p2);
+        this.p3 = (p3);
 
         this.edge1 = new Edge3D(p1, p2);
         this.edge2 = new Edge3D(p2, p3);
@@ -59,11 +61,13 @@ public class Polygon3D extends AbstractObject3D<Polygon3D> {
     }
 
     @Override
-    public void move(Polygon3D pol) {
-        this.p1.move(pol.p1);
-        this.p2.move(pol.p2);
-        this.p3.move(pol.p3);
+    public void copyOf(Polygon3D polygon3D) {
+        p1.copyOf(polygon3D.p1);
+        p2.copyOf(polygon3D.p2);
+        p3.copyOf(polygon3D.p3);
+        isReflection = polygon3D.isReflection;
     }
+
 
     @Override
     public void translate(Vector3D v) {
@@ -80,7 +84,14 @@ public class Polygon3D extends AbstractObject3D<Polygon3D> {
     }
 
     public Color getColor() {
-        return parent == null ? color : parent.getColor();
+        if (parent == null && color == null)
+            return Color.WHITE;
+
+        if (parent == null || (color != null && !parent.getColor().equals(color)))
+            return color;
+
+        return parent.getColor();
+
     }
 
     @Override
@@ -124,21 +135,25 @@ public class Polygon3D extends AbstractObject3D<Polygon3D> {
     }
 
     @Override
-    public String getString(int count) {
-        StringBuilder builder = new StringBuilder();
+    public String serialize(int count) {
+        String indent = SavedHelper.getStringSplitter(count);
+        String nextIndent = SavedHelper.getStringSplitter(++count);
 
+        StringBuilder builder = new StringBuilder();
         builder.append("[");
 
-        String splitter = SavedHelper.getStringSplitter(++count);
-        builder.append(splitter).append("p1=").append(p1.getString(count))
-                .append(splitter).append("p2=").append(p2.getString(count))
-                .append(splitter).append("p3=").append(p3.getString(count));
+        if (!p1.equals(new Point3D()))
+            builder.append(nextIndent).append("p1=").append(p1.serialize(count));
+        if (!p2.equals(new Point3D()))
+            builder.append(nextIndent).append("p2=").append(p2.serialize(count));
+        if (!p3.equals(new Point3D()))
+            builder.append(nextIndent).append("p3=").append(p3.serialize(count));
 
-        if (!color.equals(Color.WHITE))
-            builder.append(splitter).append("color=").append(SavedHelper.getColorStr(color));
+        if (color != null && !color.equals(Color.WHITE))
+            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
 
-        builder.append(splitter).append("isReflection=[").append(isReflection).append("]")
-                .append(SavedHelper.getStringSplitter(--count)).append("]");
+        builder.append(nextIndent).append("isReflection=[").append(isReflection).append("]")
+                .append(indent).append("]");
 
         return builder.toString();
     }
