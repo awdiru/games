@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.menu_panels.left.util_panels;
+package ru.avdonin.engine3d.menu_panels.util_panels;
 
 public interface InputPanel<T> {
     /**

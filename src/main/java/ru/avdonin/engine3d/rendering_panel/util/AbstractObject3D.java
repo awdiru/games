@@ -5,7 +5,7 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 
 import java.awt.*;
 
-public abstract class AbstractObject3D<T> implements Saved, Creatable {
+public abstract class AbstractObject3D<T> implements Serializable, Creatable {
     /**
      * Переместить к выбранной точке
      *
@@ -60,4 +60,9 @@ public abstract class AbstractObject3D<T> implements Saved, Creatable {
      * @return точка расположения объекта
      */
     public abstract Point3D getPoint();
+
+    @Override
+    public String toString() {
+        return serialize();
+    }
 }

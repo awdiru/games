@@ -2,7 +2,7 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SerializeHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import java.awt.*;
@@ -25,7 +25,7 @@ public class Object3D extends AbstractObject3D<Object3D> {
     public Object3D(Object3D o) {
         this.points.add(point);
         this.color = o.color;
-        for(Polygon3D p : o.polygons) addPolygon(new Polygon3D(p));
+        for (Polygon3D p : o.polygons) addPolygon(new Polygon3D(p));
     }
 
     public Object3D(Set<Polygon3D> polygons) {
@@ -72,6 +72,8 @@ public class Object3D extends AbstractObject3D<Object3D> {
     public void rotationRad(Point3D point, Vector3D normal, double angle) {
         for (Point3D p : points)
             p.rotationRad(point, normal, angle);
+        for (Polygon3D p : polygons)
+            p.calculateNormal();
     }
 
     @Override
@@ -98,14 +100,14 @@ public class Object3D extends AbstractObject3D<Object3D> {
 
     @Override
     public String serialize(int count) {
-        String indent = SavedHelper.getStringSplitter(count);
-        String nextIndent = SavedHelper.getStringSplitter(++count);
+        String indent = SerializeHelper.getStringSplitter(count);
+        String nextIndent = SerializeHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color));
 
         if (!point.equals(new Point3D()))
             builder.append(nextIndent).append("startPoint=").append(point.serialize(count));
@@ -121,23 +123,44 @@ public class Object3D extends AbstractObject3D<Object3D> {
     }
 
     @Override
+    public String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+
+        if (!color.equals(DEFAULT_COLOR))
+            builder.append("color=").append(SerializeHelper.serializeColor(color));
+
+        if (!point.equals(new Point3D()))
+            builder.append("startPoint=").append(point.serialize());
+
+        for (Point3D p : points)
+            builder.append("point=").append(p.serialize());
+
+        for (Polygon3D p : polygons)
+            builder.append("polygon=").append(p.serialize());
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
     public void setValue(String key, String value) {
         switch (key) {
-            case "color" -> color = SavedHelper.getColor(value);
+            case "color" -> color = SerializeHelper.deserializeColor(value);
             case "startPoint" -> {
                 Point3D p = new Point3D();
-                p.writeObject(value);
+                p.deserialize(value);
                 points.add(p);
                 this.point.move(p);
             }
             case "point" -> {
                 Point3D p = new Point3D();
-                p.writeObject(value);
+                p.deserialize(value);
                 points.add(p);
             }
             case "polygon" -> {
                 Polygon3D p = new Polygon3D();
-                p.writeObject(value);
+                p.deserialize(value);
                 addPolygon(p);
             }
             default -> throw new RuntimeException("Некорректное название переменной " + key);

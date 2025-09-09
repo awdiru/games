@@ -46,19 +46,23 @@ public class Saver {
         for (int i = 2; i < lines.size(); i++)
             builder.append("\n").append(lines.get(i));
 
-        obj.writeObject(builder.toString());
-        storage.add(getName(path), obj);
+        obj.deserialize(builder.toString());
+        String name = getName(path);
+        System.out.println(name);
+        storage.put(name, obj);
     }
 
     public static void saveScene(String path, String name) {
         try {
-            String p = (path.endsWith("/") ? path : path + "/") + "scene/";
+            String p = (path.endsWith("/") ? path : path + "/") + name + "/";
             String objectsPath = p + "objects/";
             Path scenePath = Path.of(p + name + SCENE_FILE_EXTENSION);
+            Path objectsDirectory = Path.of(objectsPath);
 
             Files.createDirectories(scenePath.getParent());
-            clearDirectory(scenePath.getParent());
-            Files.createDirectories(Path.of(objectsPath));
+            if (Files.exists(objectsDirectory))
+                clearDirectory(objectsDirectory);
+            Files.createDirectories(objectsDirectory);
 
             try (BufferedWriter writer = Files.newBufferedWriter(scenePath)) {
                 for (Map.Entry<String, AbstractObject3D<?>> entry : getStorage().getObjects().entrySet()) {
@@ -78,7 +82,7 @@ public class Saver {
     }
 
     public static String saveObject(String path, String name, AbstractObject3D<?> obj) {
-        String fullName = (path.endsWith("/") ? path : path + "/") + name + OBJ_FILE_EXTENSION;
+        String fullName = path + name + OBJ_FILE_EXTENSION;
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fullName))) {
             writer.write(obj.getClass().getName());
             writer.newLine();

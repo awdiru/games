@@ -2,12 +2,9 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.MenuHelper;
-import ru.avdonin.engine3d.helpers.JFrameHelper;
-import ru.avdonin.engine3d.helpers.SavedHelper;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.helpers.VectorHelper;
+import ru.avdonin.engine3d.helpers.*;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -107,8 +104,8 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
 
     @Override
     public String serialize(int count) {
-        String indent = SavedHelper.getStringSplitter(count);
-        String nextIndent = SavedHelper.getStringSplitter(++count);
+        String indent = SerializeHelper.getStringSplitter(count);
+        String nextIndent = SerializeHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
@@ -118,18 +115,34 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
                     .append(nextIndent).append("p2=").append(p2.serialize(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color));
 
         builder.append(indent).append("]");
         return builder.toString();
     }
 
     @Override
+    public String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+
+        if (!p1.equals(new Point3D()) && !p2.equals(new Point3D()))
+            builder.append("p1=").append(p1.serialize())
+                    .append("p2=").append(p2.serialize());
+
+        if (!color.equals(DEFAULT_COLOR))
+            builder.append("color=").append(SerializeHelper.serializeColor(color));
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
     public void setValue(String key, String value) {
         switch (key) {
-            case "p1" -> p1.writeObject(value);
-            case "p2" -> p2.writeObject(value);
-            case "color" -> color = SavedHelper.getColor(value);
+            case "p1" -> p1.deserialize(value);
+            case "p2" -> p2.deserialize(value);
+            case "color" -> color = SerializeHelper.deserializeColor(value);
             default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }

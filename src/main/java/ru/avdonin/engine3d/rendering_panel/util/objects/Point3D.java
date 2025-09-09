@@ -5,8 +5,9 @@ import lombok.Setter;
 import ru.avdonin.engine3d.helpers.MenuHelper;
 import ru.avdonin.engine3d.helpers.JFrameHelper;
 import ru.avdonin.engine3d.helpers.SavedHelper;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.helpers.SerializeHelper;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -96,43 +97,40 @@ public class Point3D extends AbstractObject3D<Point3D> {
 
     @Override
     public String serialize(int count) {
-        String str = "[" + x + ", " + y + ", " + z;
-        return color.equals(Color.WHITE) ? str + "]"
-                : str + ", " + SavedHelper.getColorStr(color) + "]";
+        if (color.equals(Color.WHITE)) return serialize();
+
+        String indent = SerializeHelper.getStringSplitter(count);
+        String nextIndent = SerializeHelper.getStringSplitter(++count);
+        StringBuilder builder = new StringBuilder();
+        builder.append("[")
+                .append(nextIndent).append("x=[").append(x).append("]")
+                .append(nextIndent).append("y=[").append(y).append("]")
+                .append(nextIndent).append("z=[").append(z).append("]")
+                .append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color))
+                .append(indent).append("]");
+
+        return builder.toString();
+    }
+
+    @Override
+    public String serialize() {
+        String s = "[x=[" + x + "] y=[" + y + "] z=[" + z + "]";
+        if (!color.equals(Color.WHITE))
+            s += " color=" + SerializeHelper.serializeColor(color) + "]";
+        s += "]";
+        return s;
     }
 
     @Override
     public void setValue(String key, String value) {
+        String doubleValue = value.substring(1, value.length() - 1);
         switch (key) {
-            case "x" -> x = Double.parseDouble(value);
-            case "y" -> y = Double.parseDouble(value);
-            case "z" -> z = Double.parseDouble(value);
-            case "color" -> color = SavedHelper.getColor(value);
+            case "x" -> x = Double.parseDouble(doubleValue);
+            case "y" -> y = Double.parseDouble(doubleValue);
+            case "z" -> z = Double.parseDouble(doubleValue);
+            case "color" -> color = SerializeHelper.deserializeColor(value);
             default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
-    }
-
-    @Override
-    public void writeObject(String obj) {
-        String[] arr = obj.split("\n");
-        if (arr.length != 1)
-            throw new RuntimeException("Некорректная запись " + obj);
-        String point = arr[0];
-
-        if (!point.startsWith("[") || !point.endsWith("]"))
-            throw new RuntimeException("Некорректная запись " + obj);
-
-        String str = point.substring(1, point.length() - 1);
-        String[] array = str.split(", ");
-
-        if (array.length >= 3) {
-            setValue("x", array[0]);
-            setValue("y", array[1]);
-            setValue("z", array[2]);
-        }
-        if (array.length == 4)
-            setValue("color", array[3]);
-        else if (array.length != 3) throw new RuntimeException("Некорректная запись " + obj);
     }
 
     public Color getColor() {

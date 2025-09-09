@@ -21,7 +21,7 @@ public class RenderHelper {
      */
     public static double computeIntensityLight(int minIntensity, Polygon3D polygon, Light3D light) {
         Point3D pCenter = VectorHelper.getCenterPolygon(polygon);
-        Vector3D pn = VectorHelper.getNormalVector(VectorHelper.getNormal(polygon));
+        Vector3D pn = polygon.getNormal();
         Vector3D l = new Vector3D(light.getPoint(), pCenter);
         double angle = VectorHelper.getAngleRad(pn, l);
         return Math.max(minIntensity, Math.cos(angle) * light.getIntensity());

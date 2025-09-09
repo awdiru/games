@@ -1,6 +1,6 @@
-package ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels;
+package ru.avdonin.engine3d.menu_panels.util_panels.input_panels;
 
-import ru.avdonin.engine3d.menu_panels.left.util_panels.InputPanel;
+import ru.avdonin.engine3d.menu_panels.util_panels.InputPanel;
 
 import javax.swing.*;
 

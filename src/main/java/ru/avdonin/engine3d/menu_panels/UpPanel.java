@@ -1,4 +1,4 @@
-package ru.avdonin.engine3d.menu_panels.left;
+package ru.avdonin.engine3d.menu_panels;
 
 import lombok.Getter;
 import ru.avdonin.engine3d.rendering_panel.util.Creatable;

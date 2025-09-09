@@ -11,7 +11,7 @@ public class VectorHelper {
      *
      * @param p1 точка 1
      * @param p2 точка 2
-     * @return расстояние между точккками
+     * @return расстояние между точками
      */
     public static double getLength(Point3D p1, Point3D p2) {
         double dx = p1.getX() - p2.getX();
@@ -29,6 +29,9 @@ public class VectorHelper {
      * @return нормаль к плоскости
      */
     public static Vector3D getNormal(Point3D p1, Point3D p2, Point3D p3) {
+        if (p1 == null || p2 == null || p3 == null) return new Vector3D();
+        if (p1.equals(p2) || p2.equals(p3) || p3.equals(p1)) return new Vector3D();
+
         double x1 = p1.getX();
         double y1 = p1.getY();
         double z1 = p1.getZ();
@@ -66,8 +69,8 @@ public class VectorHelper {
      * @return угол в радианах
      */
     public static double getAngleRad(Vector3D v1, Vector3D v2) {
-        Vector3D nv1 = getNormalVector(v1);
-        Vector3D nv2 = getNormalVector(v2);
+        Vector3D nv1 = normalizeVector(v1);
+        Vector3D nv2 = normalizeVector(v2);
 
         double x1 = nv1.getEnd().getX();
         double y1 = nv1.getEnd().getY();
@@ -100,7 +103,7 @@ public class VectorHelper {
      * @param v изначальный вектор
      * @return нормализованный вектор
      */
-    public static Vector3D getNormalVector(Vector3D v) {
+    public static Vector3D normalizeVector(Vector3D v) {
         Point3D d = v.getDelta();
 
         double length = v.getLength();

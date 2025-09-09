@@ -2,37 +2,37 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SerializeHelper;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import java.awt.*;
 import java.util.Objects;
 
 @Getter
-public class Camera3D extends AbstractObject3D<Camera3D>{
-    public final static Basis DEFAULT_BASIS = new Basis();
+public class Camera3D extends AbstractObject3D<Camera3D> {
+    public final static Basis3D DEFAULT_BASIS = new Basis3D();
     public final static double DEFAULT_ZOOM = 1;
     public final static double DEFAULT_VIEWING_ANGLE = Math.PI / 2;
 
-    private final Basis basis;
+    private final Basis3D basis;
     @Setter
     private double zoom = DEFAULT_ZOOM;
     private double viewingAngle = DEFAULT_VIEWING_ANGLE;
 
     public Camera3D() {
-        this.basis = new Basis(DEFAULT_BASIS);
+        this.basis = new Basis3D(DEFAULT_BASIS);
     }
 
     public Camera3D(Point3D p, Vector3D v) {
-        this.basis = new Basis(p, v);
+        this.basis = new Basis3D(p, v);
     }
 
     public Camera3D(Vector3D v) {
-        this.basis = new Basis(v.getStart(), v);
+        this.basis = new Basis3D(v.getStart(), v);
     }
 
     public Camera3D(Camera3D camera3D) {
-        this.basis = new Basis(camera3D.basis);
+        this.basis = new Basis3D(camera3D.basis);
         this.zoom = camera3D.zoom;
         this.viewingAngle = camera3D.viewingAngle;
     }
@@ -98,8 +98,8 @@ public class Camera3D extends AbstractObject3D<Camera3D>{
 
     @Override
     public String serialize(int count) {
-        String indent = SavedHelper.getStringSplitter(count);
-        String nextIndent = SavedHelper.getStringSplitter(++count);
+        String indent = SerializeHelper.getStringSplitter(count);
+        String nextIndent = SerializeHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
@@ -118,11 +118,30 @@ public class Camera3D extends AbstractObject3D<Camera3D>{
     }
 
     @Override
+    public String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+
+        if (!basis.equals(DEFAULT_BASIS))
+            builder.append("basis=").append(basis.serialize());
+
+        if (zoom != DEFAULT_ZOOM)
+            builder.append("zoom=[").append(zoom).append("]");
+
+        if (viewingAngle != DEFAULT_VIEWING_ANGLE)
+            builder.append("viewingAngle=[").append(viewingAngle).append("]");
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
     public void setValue(String key, String value) {
+        String doubleValue = value.substring(1, value.length() - 1);
         switch (key) {
-            case "basis" -> basis.writeObject(value);
-            case "zoom" -> zoom = Double.parseDouble(value);
-            case "viewingAngle" -> viewingAngle = Double.parseDouble(value);
+            case "basis" -> basis.deserialize(value);
+            case "zoom" -> zoom = Double.parseDouble(doubleValue);
+            case "viewingAngle" -> viewingAngle = Double.parseDouble(doubleValue);
             default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }

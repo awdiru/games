@@ -1,8 +1,15 @@
 package ru.avdonin.engine3d.rendering_panel.util;
 
-import ru.avdonin.engine3d.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SerializeHelper;
 
-public interface Saved {
+public interface Serializable {
+    /**
+     * Изменить значение переменной
+     *
+     * @param key   название переменной
+     * @param value новое значение
+     */
+    void setValue(String key, String value);
 
     /**
      * Возвращает сериализованное строковое представление объекта с учетом уровня вложенности
@@ -13,19 +20,18 @@ public interface Saved {
     String serialize(int count);
 
     /**
-     * Изменить значение переменной
+     * Возвращает сериализованное строковое представление объекта
      *
-     * @param key   название переменной
-     * @param value новое значение
+     * @return сериализованное строковое представление объекта
      */
-    void setValue(String key, String value);
+    String serialize();
 
     /**
-     * Записать объект из его строкового представления
+     * Десериализовать объект из строки
      *
-     * @param obj строковое представление объекта
+     * @param obj сериализованный объект
      */
-    default void writeObject(String obj) {
+    default void deserialize(String obj) {
         if (!obj.startsWith("[") || !obj.endsWith("]"))
             throw new RuntimeException("Некорректная запись\n" + obj);
 
@@ -33,23 +39,15 @@ public interface Saved {
         while (true) {
             if (str.isBlank()) return;
 
-            String key = SavedHelper.getNameObject(str);
-            String value = SavedHelper.getStrObject(str);
+            String key = SerializeHelper.getNameObject(str);
+            String value = SerializeHelper.getSerializeObject(str);
 
             if (key.isBlank() || value.isBlank())
                 throw new RuntimeException("Некорректная запись\n" + obj);
 
             setValue(key, value);
             int size = key.length() + value.length() + 2;
-            str = getStr(str,  size);
+            str = SerializeHelper.shortenString(str, size);
         }
-    }
-
-    private String getStr(String str, int size) {
-        str = str.strip();
-        if (str.length() < size) return "";
-        str = str.substring(size);
-        if (str.isBlank()) return "";
-        return str;
     }
 }

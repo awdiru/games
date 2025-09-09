@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
-import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.storage.SceneStorage;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Camera3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
@@ -21,7 +20,7 @@ public abstract class Render extends JPanel {
         SceneStorage storage = getStorage();
         Camera3D camera = storage.get(MAIN_CAMERA_NAME);
         if (camera == null)
-            SavedHelper.addObjectToScene(MAIN_CAMERA_NAME, this.camera);
+            getStorage().put(MAIN_CAMERA_NAME, this.camera);
         else this.camera = camera;
     }
 

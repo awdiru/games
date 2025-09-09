@@ -212,7 +212,7 @@ public class SimpleRender extends Render {
     }
 
     private double getCameraAngle(Polygon3D polygon) {
-        Vector3D polygonNormal = VectorHelper.getNormalVector(VectorHelper.getNormal(polygon));
+        Vector3D polygonNormal = polygon.getNormal();
         Point3D cameraPoint = camera.getPoint();
         Point3D centerPolygon = VectorHelper.getCenterPolygon(polygon);
         Vector3D toCamera = new Vector3D(centerPolygon, cameraPoint);
@@ -249,6 +249,7 @@ public class SimpleRender extends Render {
 
             renderLine2D(xCenter, yCenter, x2, y2, centerDepth, new Color(198, 198, 198));
         }
+        /*
         Point3D dottedEnd = new Point3D(point.getX(), 0, point.getZ());
         Color dottedColor = new Color(27, 27, 27);
         renderDottedLine3D(point, dottedEnd, dottedColor, 20);
@@ -274,6 +275,7 @@ public class SimpleRender extends Render {
 
         renderLine3D(d1, d2, dottedColor);
         renderLine3D(d3, d4, dottedColor);
+         */
     }
 
     private void renderLine2D(int x1, int y1, int x2, int y2, double depth, Color color) {
@@ -348,7 +350,7 @@ public class SimpleRender extends Render {
 
         Vector3D vector = new Vector3D(p1, p2);
         double length = vector.getLength();
-        vector = VectorHelper.getNormalVector(vector);
+        vector = VectorHelper.normalizeVector(vector);
         vector = VectorHelper.changeLenVector(vector, dottedSize);
 
         int N = (int) (length / dottedSize);

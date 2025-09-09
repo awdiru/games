@@ -2,7 +2,7 @@ package ru.avdonin.engine3d;
 
 
 import lombok.Getter;
-import ru.avdonin.engine3d.menu_panels.left.LeftPanel;
+import ru.avdonin.engine3d.menu_panels.LeftPanel;
 import ru.avdonin.engine3d.rendering_panel.renders.Render;
 
 import javax.swing.*;

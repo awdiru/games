@@ -1,6 +1,7 @@
 package ru.avdonin.engine3d.rendering_panel.util.objects;
 
-import ru.avdonin.engine3d.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.SerializeHelper;
+import ru.avdonin.engine3d.helpers.VectorHelper;
 
 public class Vector3D extends Edge3D {
     public Vector3D() {
@@ -46,32 +47,65 @@ public class Vector3D extends Edge3D {
                 this.getDelta().getZ() * other.getDelta().getZ();
     }
 
+    public Vector3D cross(Vector3D other){
+        double xz = this.getEnd().getX();
+        double yz = this.getEnd().getY();
+        double zz = this.getEnd().getZ();
+
+        double xx = other.getEnd().getX();
+        double yx = other.getEnd().getY();
+        double zx = other.getEnd().getZ();
+
+        double xy = yz * zx - zz * yx;
+        double yy = zz * xx - xz * zx;
+        double zy = xz * yx - yz * xx;
+
+        return new Vector3D(xy, yy, zy);
+    }
+
     @Override
     public String serialize(int count) {
-        String indent = SavedHelper.getStringSplitter(count);
-        String nextIndent = SavedHelper.getStringSplitter(++count);
+        String indent = SerializeHelper.getStringSplitter(count);
+        String nextIndent = SerializeHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
         if (!getStart().equals(new Point3D()))
-                    builder.append(nextIndent).append("start=").append(p1.serialize(count));
+            builder.append(nextIndent).append("start=").append(p1.serialize(count));
 
         builder.append(nextIndent).append("end=").append(p2.serialize(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color));
 
         builder.append(indent).append("]");
         return builder.toString();
     }
 
     @Override
+    public String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+
+        if (!getStart().equals(new Point3D()))
+            builder.append("start=").append(p1.serialize());
+
+        builder.append("end=").append(p2.serialize());
+
+        if (!color.equals(DEFAULT_COLOR))
+            builder.append("color=").append(SerializeHelper.serializeColor(color));
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
     public void setValue(String key, String value) {
         switch (key) {
-            case "start" -> p1.writeObject(value);
-            case "end" -> p2.writeObject(value);
-            case "color" -> color = SavedHelper.getColor(value);
+            case "start" -> p1.deserialize(value);
+            case "end" -> p2.deserialize(value);
+            case "color" -> color = SerializeHelper.deserializeColor(value);
             default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }

@@ -17,7 +17,7 @@ public class SceneStorage {
     @Setter
     private AbstractObject3D<?> selectedObject = null;
 
-    public void add(String key, AbstractObject3D<?> obj) {
+    public void put(String key, AbstractObject3D<?> obj) {
         if (obj instanceof Light3D)
             lights.put(key, (Light3D) obj);
         if (obj instanceof Camera3D)

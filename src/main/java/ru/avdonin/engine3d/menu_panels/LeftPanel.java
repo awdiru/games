@@ -1,11 +1,11 @@
-package ru.avdonin.engine3d.menu_panels.left;
+package ru.avdonin.engine3d.menu_panels;
 
 import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.RotatePane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.RotatePane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;

@@ -2,13 +2,10 @@ package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.avdonin.engine3d.helpers.MenuHelper;
-import ru.avdonin.engine3d.helpers.JFrameHelper;
-import ru.avdonin.engine3d.helpers.SavedHelper;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.CoordsPane;
-import ru.avdonin.engine3d.menu_panels.left.util_panels.input_panels.SizeField;
-import ru.avdonin.engine3d.helpers.VectorHelper;
+import ru.avdonin.engine3d.helpers.*;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.SizeField;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -58,7 +55,7 @@ public class Light3D extends AbstractObject3D<Light3D> {
         this.point.move(start);
         this.intensity = intensity;
         this.angle = angle;
-        this.vector = VectorHelper.getNormalVector(vector);
+        this.vector = VectorHelper.normalizeVector(vector);
     }
 
     @Override
@@ -92,7 +89,7 @@ public class Light3D extends AbstractObject3D<Light3D> {
     }
 
     public void setVector(Vector3D vector) {
-        this.vector = VectorHelper.getNormalVector(vector);
+        this.vector = VectorHelper.normalizeVector(vector);
     }
 
     public void setAngleRad(double angle) {
@@ -107,8 +104,8 @@ public class Light3D extends AbstractObject3D<Light3D> {
 
     @Override
     public String serialize(int count) {
-        String indent = SavedHelper.getStringSplitter(count);
-        String nextIndent = SavedHelper.getStringSplitter(++count);
+        String indent = SerializeHelper.getStringSplitter(count);
+        String nextIndent = SerializeHelper.getStringSplitter(++count);
 
         StringBuilder builder = new StringBuilder();
         builder.append("[");
@@ -126,20 +123,44 @@ public class Light3D extends AbstractObject3D<Light3D> {
             builder.append(nextIndent).append("angle=[").append(angle).append("]");
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(nextIndent).append("color=").append(SavedHelper.getColorStr(color));
+            builder.append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color));
 
         builder.append(indent).append("]");
         return builder.toString();
     }
 
     @Override
+    public String serialize() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+
+        if (!point.equals(DEFAULT_POINT))
+            builder.append("point=").append(point.serialize());
+
+        if (!vector.equals(DEFAULT_VECTOR))
+            builder.append("vector=").append(vector.serialize());
+
+        if (intensity != DEFAULT_INTENSITY)
+            builder.append("intensity=[").append(intensity).append("]");
+
+        if (angle != DEFAULT_ANGLE)
+            builder.append("angle=[").append(angle).append("]");
+
+        if (!color.equals(DEFAULT_COLOR))
+            builder.append("color=").append(SerializeHelper.serializeColor(color));
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
     public void setValue(String key, String value) {
         switch (key) {
-            case "point" -> point.writeObject(value);
-            case "vector" -> vector.writeObject(value);
+            case "point" -> point.deserialize(value);
+            case "vector" -> vector.deserialize(value);
             case "intensity" -> intensity = Integer.parseInt(value.substring(1, value.length() - 1));
             case "angle" -> angle = Double.parseDouble(value.substring(1, value.length() - 1));
-            case "color" -> color = SavedHelper.getColor(value);
+            case "color" -> color = SerializeHelper.deserializeColor(value);
             default -> throw new RuntimeException("Некорректное название переменной " + key);
         }
     }
