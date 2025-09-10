@@ -11,12 +11,9 @@ import java.util.*;
 @Getter
 @Setter
 public class Object3D extends AbstractObject3D<Object3D> {
-    public static final Color DEFAULT_COLOR = Color.WHITE;
-
     protected final Set<Polygon3D> polygons = new HashSet<>();
     protected final Set<Point3D> points = new HashSet<>();
     protected Point3D point = new Point3D();
-    protected Color color = DEFAULT_COLOR;
 
     public Object3D() {
         this.points.add(point);
@@ -106,7 +103,7 @@ public class Object3D extends AbstractObject3D<Object3D> {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
-        if (!color.equals(DEFAULT_COLOR))
+        if (!color.equals(Color.WHITE))
             builder.append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color));
 
         if (!point.equals(new Point3D()))
@@ -127,7 +124,7 @@ public class Object3D extends AbstractObject3D<Object3D> {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
 
-        if (!color.equals(DEFAULT_COLOR))
+        if (!color.equals(Color.WHITE))
             builder.append("color=").append(SerializeHelper.serializeColor(color));
 
         if (!point.equals(new Point3D()))

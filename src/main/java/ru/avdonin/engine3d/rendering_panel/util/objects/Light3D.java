@@ -18,14 +18,11 @@ public class Light3D extends AbstractObject3D<Light3D> {
     public final static Vector3D DEFAULT_VECTOR = new Vector3D(0, 0, 1);
     public final static int DEFAULT_INTENSITY = 500;
     public final static double DEFAULT_ANGLE = 90;
-    public final static Color DEFAULT_COLOR = Color.WHITE;
 
     private final Point3D point = new Point3D();
     private int intensity;
     private Vector3D vector;
     private double angle;
-    @Setter
-    private Color color = Color.WHITE;
 
     public Light3D() {
         this(DEFAULT_POINT, DEFAULT_INTENSITY, DEFAULT_ANGLE, DEFAULT_VECTOR);

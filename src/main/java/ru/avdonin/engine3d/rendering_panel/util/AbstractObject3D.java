@@ -1,11 +1,17 @@
 package ru.avdonin.engine3d.rendering_panel.util;
 
+import lombok.Getter;
+import lombok.Setter;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 
 import java.awt.*;
 
+@Getter
+@Setter
 public abstract class AbstractObject3D<T> implements Serializable, Creatable {
+    public static final Color DEFAULT_COLOR = Color.WHITE;
+    protected Color color = DEFAULT_COLOR;
     /**
      * Переместить к выбранной точке
      *
@@ -46,13 +52,6 @@ public abstract class AbstractObject3D<T> implements Serializable, Creatable {
     public void rotation(Point3D point, Vector3D normal, double angle) {
         rotationRad(point, normal, Math.toRadians(angle));
     }
-
-    /**
-     * Вернуть цвет объекта
-     *
-     * @return цвет объекта
-     */
-    public abstract Color getColor();
 
     /**
      * Вернуть точку расположения объекта

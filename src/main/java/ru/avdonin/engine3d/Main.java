@@ -8,6 +8,7 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Sphere;
 import ru.avdonin.engine3d.saver.Saver;
 import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Cube;
 import ru.avdonin.engine3d.space_builder.SpaceBuilder;
+import ru.avdonin.engine3d.space_builder.SurfaceBuilder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -131,23 +132,26 @@ public class Main {
 
             SpaceBuilder builder = new SpaceBuilder();
 
-            Point3D center = new Point3D(500, -500, 500);
+            Point3D center = new Point3D(0, 0, 0);
 
             Camera3D camera = renderPanel.getCamera();
-            camera.move(new Point3D(0, -500, -1000));
+            camera.move(new Point3D(0, 500, -1200));
             camera.getBasis().setVectorZ(new Vector3D(camera.getPoint(), center));
 
-            builder.createLights(center, 700);
+            builder.createLights(center, 1200);
 
-            builder.createSpace(new Sphere(), center, 1000, 21, () -> {
-                int x = builder.x;
-                int y = builder.y;
-                int z = builder.z;
+            SurfaceBuilder surfaceBuilder = new SurfaceBuilder();
+            surfaceBuilder.createEllipsoid(center, 1000, 10, 9, 8);
+            //surfaceBuilder.createHyperboloid(center, 1000, true, 3, 2, 3);
+            //surfaceBuilder.createSinWave(center, 1000, 2, 1);
+            //surfaceBuilder.createThor(center, 1000, 3, 1.5);
+            //surfaceBuilder.createBoySurface(center, 1000);
+            //surfaceBuilder.createKlyainSurface(center, 1000);
+            //surfaceBuilder.createBarthSextic(center, 1000);
+            //surfaceBuilder.createHeard(center, 1000);
+            //surfaceBuilder.createDiniSurface(center, 1000);
 
-                boolean sphere = x * x + y * y + z * z <= 450 && x * x + y * y + z * z >= 350;
-                boolean cil = (x - 10) * (x - 10) + y * y <= 110 && (x - 10) * (x - 10) + y * y >= 90;
-                return sphere;
-            });
+            //builder.createSpace(new Point3D(), center, 1000, 20, () -> true);
 
             new EngineFrame("test", renderPanel, e -> {
                 camera.rotation(center, new Vector3D(0, 1, 0), 2);

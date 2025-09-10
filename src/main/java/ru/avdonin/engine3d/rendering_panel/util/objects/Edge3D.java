@@ -14,11 +14,8 @@ import java.util.Objects;
 @Getter
 @Setter
 public class Edge3D extends AbstractObject3D<Edge3D> {
-    public static final Color DEFAULT_COLOR = Color.WHITE;
-
     protected Point3D p1;
     protected Point3D p2;
-    protected Color color = Color.WHITE;
     protected AbstractObject3D<?> parent;
 
     public Edge3D() {
