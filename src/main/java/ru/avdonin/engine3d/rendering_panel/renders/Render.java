@@ -31,4 +31,12 @@ public abstract class Render extends JPanel {
     public void setSkeleton(Boolean isSkeleton) {
         Context.put(Constants.IS_SKELETON_KEY, isSkeleton);
     }
+
+    public void setRenderingLightsObj(Boolean renderingLights) {
+        Context.put(Constants.RENDERING_LIGHTS_OBJ, renderingLights);
+    }
+
+    public void setNoiseFilter(Boolean noiseFilter) {
+        Context.put(Constants.NOISE_FILTER, noiseFilter);
+    }
 }

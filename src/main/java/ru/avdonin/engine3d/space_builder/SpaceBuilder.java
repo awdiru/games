@@ -35,26 +35,26 @@ public class SpaceBuilder {
             for (y = -halfScale; y <= halfScale; y += resolution) {
                 for (z = -halfScale; z <= halfScale; z += resolution) {
                     if (bol.get()) {
-                        AbstractObject3D<?> obj;
-                        if (t instanceof TestObj to) {
-                            obj = to.createObject();
-                        } else if (t instanceof AbstractObject3D<?>) {
-                            obj = Creatable.newInstance(t.getClass().getName());
-                        } else throw new RuntimeException("Неизвестный класс " + t.getClass().getName());
-
                         double xReal = offsetX + (x / halfScale) * halfSize;
                         double yReal = offsetY + (y / halfScale) * halfSize;
                         double zReal = offsetZ + (z / halfScale) * halfSize;
 
                         Point3D point = new Point3D(xReal, yReal, zReal);
 
-                        obj.move(point);
-
                         int red = (int) Math.abs(Math.sqrt(x / halfScale) * 255);
                         int green = (int) Math.abs(Math.sqrt(y / halfScale) * 255);
                         int blue = (int) Math.abs(Math.sqrt(z / halfScale) * 255);
+                        Color color = new Color(red, green, blue, 255);
 
-                        obj.setColor(new Color(red, green, blue, 255));
+                        AbstractObject3D<?> obj;
+                        if (t instanceof TestObj to) {
+                            obj = to.createObject(point, scale / resolution / 2, color);
+                        } else if (t instanceof AbstractObject3D<?>) {
+                            obj = Creatable.newInstance(t.getClass().getName());
+                            obj.move(point);
+                            obj.setColor(color);
+                        } else throw new RuntimeException("Неизвестный класс " + t.getClass().getName());
+
                         SavedHelper.addObjectToScene(t.getClass().getSimpleName(), obj);
                     }
                 }

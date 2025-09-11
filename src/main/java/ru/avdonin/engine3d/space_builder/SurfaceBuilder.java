@@ -1,7 +1,12 @@
 package ru.avdonin.engine3d.space_builder;
 
 import lombok.Getter;
+import ru.avdonin.engine3d.helpers.SavedHelper;
+import ru.avdonin.engine3d.helpers.VectorHelper;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
+import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
+
+import java.awt.*;
 
 @Getter
 public class SurfaceBuilder extends SpaceBuilder {
@@ -9,8 +14,14 @@ public class SurfaceBuilder extends SpaceBuilder {
     protected boolean isChangeDelta = false;
 
     public void createEllipsoid(Point3D p, double size, double dx, double dy, double dz) {
-
-        setValues(Math.max(dx, Math.max(dy, dz)) * 2, 0.005, 0.02);
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = Math.max(dx, Math.max(dy, dz)) * 2.5;
+        if (!isChangeResolution)
+            this.resolution = scale / 200;
+        if (!isChangeDelta)
+            this.delta = 0.005 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
             double surface = ((x * x / (dx * dx)) + (y * y / (dy * dy)) + (z * z / (dz * dz)));
@@ -18,34 +29,49 @@ public class SurfaceBuilder extends SpaceBuilder {
         });
     }
 
-    public void createHyperboloid(Point3D p, double size, boolean isBicameral, double dx, double dy, double dz) {
-        setValues(100, 0.1, 0.05);
+    public void createHyperboloid(Point3D p, double size, boolean isBicameral, double dx, double dy, double dz, double r) {
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = Math.max(dx, Math.max(dy, dz)) * 40;
+        if (!isChangeResolution)
+            this.resolution = scale / 500;
+        if (!isChangeDelta)
+            this.delta = 0.01 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
-            double sum = (isBicameral ? -1 : 1) * 20;
+            double sum = (isBicameral ? -1 : 1) * r;
             double surface = (x * x / (dx * dx)) + (y * y / (dy * dy)) - (z * z / (dz * dz));
-
-            double min = sum - delta;
-            double max = sum + delta;
 
             return surface <= sum + delta && surface >= sum - delta;
         });
     }
 
     public void createSinWave(Point3D p, double size, double period, double A) {
-        setValues(10, 0.1, 0.03);
-
-        double pe = period * scale / 10;
-        double a = A * scale / 10;
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = Math.max(period * 6, A * 12);
+        if (!isChangeResolution)
+            this.resolution = scale / 300;
+        if (!isChangeDelta)
+            this.delta = 0.01 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
-            double surface = z - A * Math.sin(((2 * Math.PI) / period) * x);
+            double surface = y - A * Math.sin(((2 * Math.PI) / period) * x);
             return surface <= delta && surface >= -delta;
         });
     }
 
     public void createThor(Point3D p, double size, double R, double r) {
-        setValues(9, 5, 0.05);
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = (R + r) * 2.2;
+        if (!isChangeResolution)
+            this.resolution = scale / 400;
+        if (!isChangeDelta)
+            this.delta = 0.01 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
             double sum = (4 * R * R) * ((x * x) + (y * y));
@@ -56,7 +82,14 @@ public class SurfaceBuilder extends SpaceBuilder {
     }
 
     public void createBoySurface(Point3D p, double size) {
-        setValues(20, 0.1, 0.05);
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = 7;
+        if (!isChangeResolution)
+            this.resolution = scale / 200;
+        if (!isChangeDelta)
+            this.delta = 0.1 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
             double sum = Math.pow(((x * x) + (y * y) + (z * z)), 2);
@@ -68,7 +101,14 @@ public class SurfaceBuilder extends SpaceBuilder {
     }
 
     public void createKlyainSurface(Point3D p, double size) {
-        setValues(7, 0.1, 0.05);
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = 9;
+        if (!isChangeResolution)
+            this.resolution = scale / 300;
+        if (!isChangeDelta)
+            this.delta = 0.08 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
             double sum = 0;
@@ -82,7 +122,14 @@ public class SurfaceBuilder extends SpaceBuilder {
     }
 
     public void createBarthSextic(Point3D p, double size) {
-        setValues(7, 0.1, 0.05);
+        createCoordinateGrid(p, size);
+        if (!isChangeScale)
+            this.scale = 10;
+        if (!isChangeResolution)
+            this.resolution = scale / 400;
+        if (!isChangeDelta)
+            this.delta = 0.05 * Math.log(1 + scale / resolution);
+        resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {
             double T = (1 + Math.sqrt(5)) / 2;
@@ -120,6 +167,34 @@ public class SurfaceBuilder extends SpaceBuilder {
     public void setDelta(double delta) {
         this.delta = delta;
         this.isChangeDelta = true;
+    }
+
+    private void createCoordinateGrid(Point3D o, double size) {
+        Vector3D vectorX = new Vector3D(1, 0, 0);
+        Vector3D vectorY = new Vector3D(0, 1, 0);
+        Vector3D vectorZ = new Vector3D(0, 0, 1);
+
+        vectorX.setColor(new Color(255, 0, 0));
+        vectorY.setColor(new Color(0, 255, 0));
+        vectorZ.setColor(new Color(0, 0, 255));
+
+        double halfSize = size / 2;
+
+        vectorX.move(o);
+        vectorY.move(o);
+        vectorZ.move(o);
+
+        vectorX.translate(new Vector3D(-halfSize, 0, 0));
+        vectorY.translate(new Vector3D(0, -halfSize, 0));
+        vectorZ.translate(new Vector3D(0, 0, -halfSize));
+
+        vectorX = VectorHelper.changeLenVector(vectorX, size);
+        vectorY = VectorHelper.changeLenVector(vectorY, size);
+        vectorZ = VectorHelper.changeLenVector(vectorZ, size);
+
+        SavedHelper.addObjectToScene("VectorX", vectorX);
+        SavedHelper.addObjectToScene("VectorY", vectorY);
+        SavedHelper.addObjectToScene("VectorZ", vectorZ);
     }
 
     private void setValues(double scale, double baseDelta, double baseResolution) {

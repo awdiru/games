@@ -16,6 +16,7 @@ import ru.avdonin.engine3d.rendering_panel.util.objects.*;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -43,28 +44,35 @@ public class SimpleRender extends Render {
     protected void paintComponent(Graphics g) {
         SceneStorage storage = getStorage();
         super.paintComponent(g);
+        Boolean noiseFilter = Context.get(Constants.NOISE_FILTER);
 
         zBuffer.clearZBuffer();
-        frameBuffer.clearBuffer();
-
+        if (noiseFilter) frameBuffer.clearBuffer();
         List<Callable<Void>> tasks = new ArrayList<>();
+
+        Graphics2D g2d = (Graphics2D) g;
+        if (!noiseFilter){
+            g2d.setColor(Constants.BACKGROUND);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+        }
+
         for (Map.Entry<String, AbstractObject3D<?>> entry : storage.getObjects().entrySet()) {
             String name = entry.getKey();
             AbstractObject3D<?> obj = entry.getValue();
             tasks.add(() -> {
                 if (obj instanceof Light3D o)
-                    renderLight(o);
+                    renderLight(g2d, o);
                 else if (obj instanceof Point3D o)
-                    renderPoint(o);
+                    renderPoint(g2d, o);
                 else if (obj instanceof Vector3D o)
-                    renderVector(o);
+                    renderVector(g2d, o);
                 else if (obj instanceof Edge3D o)
-                    renderLine(o);
+                    renderLine(g2d, o);
                 else if (obj instanceof Polygon3D o)
-                    renderPolygon(o);
+                    renderPolygon(g2d, o);
                 else if (obj instanceof Object3D o)
                     for (Polygon3D polygon : o.getPolygons())
-                        renderPolygon(polygon);
+                        renderPolygon(g2d, polygon);
                 return null;
             });
         }
@@ -75,22 +83,34 @@ public class SimpleRender extends Render {
             Thread.currentThread().interrupt();
         }
 
-        drawFrameBuffer((Graphics2D) g);
+        if (noiseFilter) drawFrameBuffer((Graphics2D) g);
     }
 
     private void drawFrameBuffer(Graphics2D g2d) {
+        BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int x = 0; x < getWidth(); x++) {
             for (int y = 0; y < getHeight(); y++) {
-                g2d.setColor(frameBuffer.getColor(x, y));
-                g2d.fillRect(x, y, 1, 1);
+                image.setRGB(x, y, frameBuffer.getColor(x, y).getRGB());
             }
         }
+        g2d.drawImage(image, 0, 0, null);
     }
 
-    private void setPixel(int x, int y, double depth, Color color) {
+
+    private void setPixel(Graphics2D g2d, int x, int y, double depth, Color color) {
         if (x < 0 || x >= getWidth() || y < 0 || y >= getHeight()) return;
 
+        Boolean noiseFilter = Context.get(Constants.NOISE_FILTER);
         double currentDepth = zBuffer.getDepth(x, y);
+
+        if (!noiseFilter) {
+            if (depth < currentDepth) {
+                g2d.setColor(color);
+                g2d.fillRect(x, y, 1, 1);
+            }
+            return;
+        }
+
         if (depth < currentDepth - DEPTH_EPSILON) {
             zBuffer.setDepth(x, y, depth);
             frameBuffer.setColor(x, y, color);
@@ -101,7 +121,7 @@ public class SimpleRender extends Render {
         }
     }
 
-    private void renderPoint(Point3D point) {
+    private void renderPoint(Graphics2D g2d, Point3D point) {
         Color color = point.getColor();
 
         Point2D.Double p = projectPoint(point);
@@ -111,32 +131,44 @@ public class SimpleRender extends Render {
         int x = (int) p.x;
         int y = (int) p.y;
 
-        setPixel(x, y, depth, color);
+        setPixel(g2d, x, y, depth, color);
     }
 
-    private void renderLine(Edge3D edge) {
-        renderLine(edge, edge.getColor());
+    private void renderLine(Graphics2D g2d, Edge3D edge) {
+        renderLine(g2d, edge, edge.getColor());
     }
 
-    private void renderLine(Edge3D edge, Color color) {
-        renderLine3D(edge.getP1(), edge.getP2(), color);
+    private void renderLine(Graphics2D g2d, Edge3D edge, Color color) {
+        renderLine3D(g2d, edge.getP1(), edge.getP2(), color);
     }
 
-    private void renderVector(Vector3D vector) {
-        renderLine(vector);
+    private void renderVector(Graphics2D g2d, Vector3D vector) {
+        renderLine(g2d, vector);
         Vector3D s = VectorHelper.changeLenVector(new Vector3D(vector.getEnd(), vector.getStart()), 10);
         s.setColor(vector.getColor());
 
         Vector3D s1 = new Vector3D(s);
-        s1.getEnd().translate(new Vector3D(0, 5, 0));
         Vector3D s2 = new Vector3D(s);
-        s2.getEnd().translate(new Vector3D(0, -5, 0));
 
-        renderLine(s1);
-        renderLine(s2);
+        Vector3D normalize = VectorHelper.normalizeVector(vector);
+
+        if (normalize.equals(new Vector3D(1, 0, 0))) {
+            s1.getEnd().translate(new Vector3D(0, 5, 0));
+            s2.getEnd().translate(new Vector3D(0, -5, 0));
+        } else {
+            Vector3D off = new Vector3D(1, 0, 0).cross(normalize);
+
+            off = VectorHelper.changeLenVector(off, 5);
+            s1.getEnd().translate(off);
+
+            off = VectorHelper.changeLenVector(off, -5);
+            s2.getEnd().translate(off);
+        }
+        renderLine(g2d, s1);
+        renderLine(g2d, s2);
     }
 
-    private void renderPolygon(Polygon3D polygon) {
+    private void renderPolygon(Graphics2D g2d, Polygon3D polygon) {
         Point2D.Double p1 = projectPoint(polygon.getP1());
         Point2D.Double p2 = projectPoint(polygon.getP2());
         Point2D.Double p3 = projectPoint(polygon.getP3());
@@ -146,18 +178,18 @@ public class SimpleRender extends Render {
         Boolean isSkeleton = Context.get(Constants.IS_SKELETON_KEY);
         if (((angle > 90) && isVisiblePolygon(p1, p2, p3)) || isSkeleton) {
             Color color = RenderHelper.computeColor(polygon);
-            rasterizePolygon(p1, p2, p3, polygon, color);
+            rasterizePolygon(g2d, p1, p2, p3, polygon, color);
         }
     }
 
-    private void rasterizePolygon(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3,
+    private void rasterizePolygon(Graphics2D g2d, Point2D.Double p1, Point2D.Double p2, Point2D.Double p3,
                                   Polygon3D polygon, Color color) {
 
         Boolean isSkeleton = Context.get(Constants.IS_SKELETON_KEY);
         if (isSkeleton) {
-            renderLine(polygon.getEdge1(), color);
-            renderLine(polygon.getEdge2(), color);
-            renderLine(polygon.getEdge3(), color);
+            renderLine(g2d, polygon.getEdge1(), color);
+            renderLine(g2d, polygon.getEdge2(), color);
+            renderLine(g2d, polygon.getEdge3(), color);
             return;
         }
         int minX = (int) Math.max(0, Math.min(Math.min(p1.x, p2.x), p3.x));
@@ -178,7 +210,7 @@ public class SimpleRender extends Render {
 
                 if (w1 >= 0 && w2 >= 0 && w3 >= 0) {
                     double depth = BufferHelper.interpolateDepth(polygon, this.camera, w1, w2, w3);
-                    setPixel(x, y, depth, color);
+                    setPixel(g2d, x, y, depth, color);
                 }
             }
         }
@@ -230,7 +262,9 @@ public class SimpleRender extends Render {
     }
 
 
-    private void renderLight(Light3D light) {
+    private void renderLight(Graphics2D g2d, Light3D light) {
+        Boolean renderingLights = Context.get(Constants.RENDERING_LIGHTS_OBJ);
+        if (!renderingLights) return;
         Point3D point = light.getPoint();
         Point2D.Double center = projectPoint(point);
         if (!isVisiblePoint(center)) return;
@@ -247,12 +281,11 @@ public class SimpleRender extends Render {
             int x2 = xCenter + (int) (Math.cos(Math.toRadians(i)) * r);
             int y2 = yCenter + (int) (Math.sin(Math.toRadians(i)) * r);
 
-            renderLine2D(xCenter, yCenter, x2, y2, centerDepth, new Color(198, 198, 198));
+            renderLine2D(g2d, xCenter, yCenter, x2, y2, centerDepth, new Color(198, 198, 198));
         }
-        /*
         Point3D dottedEnd = new Point3D(point.getX(), 0, point.getZ());
         Color dottedColor = new Color(27, 27, 27);
-        renderDottedLine3D(point, dottedEnd, dottedColor, 20);
+        renderDottedLine3D(g2d, point, dottedEnd, dottedColor, 20);
         Vector3D left = VectorHelper.changeLenVector(camera.getBasis().getVectorX(), 10);
         Vector3D right = VectorHelper.changeLenVector(camera.getBasis().getVectorX(), 10);
         right = new Vector3D(right.getEnd(), right.getStart());
@@ -273,12 +306,11 @@ public class SimpleRender extends Render {
         d4.translate(new Vector3D(0, 10, 0));
         d4.translate(right);
 
-        renderLine3D(d1, d2, dottedColor);
-        renderLine3D(d3, d4, dottedColor);
-         */
+        renderLine3D(g2d, d1, d2, dottedColor);
+        renderLine3D(g2d, d3, d4, dottedColor);
     }
 
-    private void renderLine2D(int x1, int y1, int x2, int y2, double depth, Color color) {
+    private void renderLine2D(Graphics2D g2d, int x1, int y1, int x2, int y2, double depth, Color color) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
         int sx = (x1 < x2) ? 1 : -1;
@@ -290,7 +322,7 @@ public class SimpleRender extends Render {
         int currentY = y1;
 
         while (true) {
-            setPixel(currentX, currentY, depth, color);
+            setPixel(g2d, currentX, currentY, depth, color);
             if (currentX == x2 && currentY == y2) break;
             e2 = 2 * err;
             if (e2 > -dy) {
@@ -304,7 +336,7 @@ public class SimpleRender extends Render {
         }
     }
 
-    private void renderLine3D(Point3D point1, Point3D point2, Color color) {
+    private void renderLine3D(Graphics2D g2d, Point3D point1, Point3D point2, Color color) {
         Point2D.Double p1 = projectPoint(point1);
         Point2D.Double p2 = projectPoint(point2);
 
@@ -321,7 +353,7 @@ public class SimpleRender extends Render {
         int steps = Math.max(dx, dy);
 
         if (steps == 0) {
-            setPixel(x1, y1, depthStart, color);
+            setPixel(g2d, x1, y1, depthStart, color);
             return;
         }
 
@@ -336,14 +368,14 @@ public class SimpleRender extends Render {
         for (int i = 0; i <= steps; i++) {
             int ix = (int) Math.round(x);
             int iy = (int) Math.round(y);
-            setPixel(ix, iy, currentDepth, color);
+            setPixel(g2d, ix, iy, currentDepth, color);
             x += xStep;
             y += yStep;
             currentDepth += depthStep;
         }
     }
 
-    private void renderDottedLine3D(Point3D point1, Point3D point2, Color color, double dottedSize) {
+    private void renderDottedLine3D(Graphics2D g2d, Point3D point1, Point3D point2, Color color, double dottedSize) {
         Point3D p1 = new Point3D(point1);
         Point3D p2 = new Point3D(point2);
 
@@ -358,9 +390,9 @@ public class SimpleRender extends Render {
         for (int i = 0; i < N / 2; i++) {
             Point3D p = new Point3D(p1);
             p1.translate(vector);
-            renderLine3D(p, p1, color);
+            renderLine3D(g2d, p, p1, color);
             p1.translate(vector);
         }
-        renderLine3D(p1, p2, color);
+        renderLine3D(g2d, p1, p2, color);
     }
 }

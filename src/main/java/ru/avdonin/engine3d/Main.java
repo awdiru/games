@@ -129,6 +129,8 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             SimpleRender renderPanel = new SimpleRender(600, 600);
             renderPanel.setSkeleton(false);
+            renderPanel.setRenderingLightsObj(false);
+            renderPanel.setNoiseFilter(false);
 
             SpaceBuilder builder = new SpaceBuilder();
 
@@ -141,8 +143,8 @@ public class Main {
             builder.createLights(center, 1200);
 
             SurfaceBuilder surfaceBuilder = new SurfaceBuilder();
-            surfaceBuilder.createEllipsoid(center, 1000, 10, 9, 8);
-            //surfaceBuilder.createHyperboloid(center, 1000, true, 3, 2, 3);
+            //surfaceBuilder.createEllipsoid(center, 1000, 10, 9, 8);
+            surfaceBuilder.createHyperboloid(center, 1000, false, 310, 250, 300, 20);
             //surfaceBuilder.createSinWave(center, 1000, 2, 1);
             //surfaceBuilder.createThor(center, 1000, 3, 1.5);
             //surfaceBuilder.createBoySurface(center, 1000);
@@ -154,7 +156,7 @@ public class Main {
             //builder.createSpace(new Point3D(), center, 1000, 20, () -> true);
 
             new EngineFrame("test", renderPanel, e -> {
-                camera.rotation(center, new Vector3D(0, 1, 0), 2);
+                camera.rotation(center, new Vector3D(0, 1, 0), 1);
                 renderPanel.repaint();
             });
         });

@@ -11,6 +11,8 @@ public class Context {
     static {
         context.put(Constants.STORAGE_KEY, new SceneStorage());
         context.put(Constants.IS_SKELETON_KEY, Boolean.FALSE);
+        context.put(Constants.RENDERING_LIGHTS_OBJ, Boolean.TRUE);
+        context.put(Constants.NOISE_FILTER, Boolean.TRUE);
     }
 
     public static <V> V get(String key) {
