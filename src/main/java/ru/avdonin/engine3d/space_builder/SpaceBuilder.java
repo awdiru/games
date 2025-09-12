@@ -7,9 +7,12 @@ import ru.avdonin.engine3d.rendering_panel.util.Creatable;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Light3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.TestObj;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.surface.SurfaceObj;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.TestObj;
 
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class SpaceBuilder {
@@ -23,13 +26,14 @@ public class SpaceBuilder {
     protected boolean isChangeScale = false;
     protected boolean isChangeResolution = false;
 
-    public <T extends Creatable> void createSpace(T t, Point3D p, double size, BooleanCustom bol) {
+    public <T extends Creatable> Set<AbstractObject3D<?>> createSpace(T t, Point3D p, double size, BooleanCustom bol) {
         double offsetX = p.getX();
         double offsetY = p.getY();
         double offsetZ = p.getZ();
 
         double halfScale = scale / 2;
         double halfSize = size / 2;
+        Set<AbstractObject3D<?>> objects = new HashSet<>();
 
         for (x = -halfScale; x <= halfScale; x += resolution) {
             for (y = -halfScale; y <= halfScale; y += resolution) {
@@ -54,12 +58,12 @@ public class SpaceBuilder {
                             obj.move(point);
                             obj.setColor(color);
                         } else throw new RuntimeException("Неизвестный класс " + t.getClass().getName());
-
-                        SavedHelper.addObjectToScene(t.getClass().getSimpleName(), obj);
+                        objects.add(obj);
                     }
                 }
             }
         }
+        return objects;
     }
 
     public <T extends TestObj> void createSphere(T t, Point3D p, double size) {

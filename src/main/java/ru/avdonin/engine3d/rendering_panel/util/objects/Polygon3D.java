@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.*;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.PointPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -109,9 +109,9 @@ public class Polygon3D extends AbstractObject3D<Polygon3D> {
 
         JPanel panel = JFrameHelper.createPanel();
 
-        CoordsPane coord1 = new CoordsPane();
-        CoordsPane coord2 = new CoordsPane();
-        CoordsPane coord3 = new CoordsPane();
+        PointPane coord1 = new PointPane();
+        PointPane coord2 = new PointPane();
+        PointPane coord3 = new PointPane();
         ColorsPane color = new ColorsPane();
         JButton button = new JButton("->");
         button.addActionListener(e -> {

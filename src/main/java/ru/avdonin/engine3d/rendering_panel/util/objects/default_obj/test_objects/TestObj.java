@@ -1,23 +1,23 @@
-package ru.avdonin.engine3d.rendering_panel.util.objects.test_objects;
+package ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects;
 
 import ru.avdonin.engine3d.helpers.JFrameHelper;
 import ru.avdonin.engine3d.helpers.MenuHelper;
 import ru.avdonin.engine3d.helpers.SavedHelper;
-import ru.avdonin.engine3d.helpers.SerializeHelper;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.PointPane;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.SizeField;
 import ru.avdonin.engine3d.rendering_panel.util.Creatable;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Object3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.DefaultObj;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.Set;
 
-public abstract class TestObj implements Creatable {
+public abstract class TestObj implements DefaultObj<Object3D>, Creatable {
     public static final Point3D DEFAULT_POINT = new Point3D();
     public static final double DEFAULT_SIZE = 100;
     public static final Color DEFAULT_COLOR = Color.WHITE;
@@ -47,7 +47,7 @@ public abstract class TestObj implements Creatable {
 
         JPanel panel = JFrameHelper.createPanel();
 
-        CoordsPane p = new CoordsPane();
+        PointPane p = new PointPane();
         ColorsPane c = new ColorsPane();
         TestObj.SField s = new TestObj.SField();
 
@@ -91,6 +91,11 @@ public abstract class TestObj implements Creatable {
             } catch (Exception e) {
                 return 100.0;
             }
+        }
+
+        @Override
+        public Double getInstance() {
+            return getValue();
         }
     }
 }

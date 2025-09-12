@@ -1,26 +1,21 @@
-package ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj;
+package ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.obj;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.TestObj;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.TestObj;
 
 import java.util.List;
 import java.util.Set;
 
-public class House extends TestObj {
+public class Cube extends TestObj {
     /*
-               p9
-             /   \
-            /    p10
-           /    /  \\
-          /    /    \\
-        p6____/_____p7\
-        | \  /      | \\
-        |  p2__________p3
+        p5__________p8
+        | \         | \
+        |  p1__________p4
         |  |        |  |
-        p5_|________p8 |
+        p6_|________p7 |
          \ |         \ |
-           p1__________p4
+           p2__________p3
     */
 
     @Override
@@ -38,21 +33,14 @@ public class House extends TestObj {
         // правая грань
         Polygon3D p7 = new Polygon3D(points.get(4), points.get(8), points.get(7));
         Polygon3D p8 = new Polygon3D(points.get(4), points.get(7), points.get(3));
+        // верхняя грань
+        Polygon3D p9 = new Polygon3D(points.get(2), points.get(7), points.get(6));
+        Polygon3D p10 = new Polygon3D(points.get(2), points.get(3), points.get(7));
         // нижняя грань
-        Polygon3D p9 = new Polygon3D(points.get(1), points.get(5), points.get(8));
-        Polygon3D p10 = new Polygon3D(points.get(1), points.get(8), points.get(4));
-        // крыша слева
-        Polygon3D p11 = new Polygon3D(points.get(2), points.get(9), points.get(6));
-        Polygon3D p12 = new Polygon3D(points.get(2), points.get(10), points.get(9));
-        // крыша справа
-        Polygon3D p13 = new Polygon3D(points.get(3), points.get(7), points.get(9));
-        Polygon3D p14 = new Polygon3D(points.get(3), points.get(9), points.get(10));
-        // крыша спереди
-        Polygon3D p15 = new Polygon3D(points.get(2), points.get(3), points.get(10));
-        // крыша сзади
-        Polygon3D p16 = new Polygon3D(points.get(6), points.get(9), points.get(7));
+        Polygon3D p11 = new Polygon3D(points.get(1), points.get(5), points.get(8));
+        Polygon3D p12 = new Polygon3D(points.get(1), points.get(8), points.get(4));
 
-        return Set.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16);
+        return Set.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12);
     }
 
     @Override
@@ -83,12 +71,6 @@ public class House extends TestObj {
         Point3D p8 = new Point3D(p7);
         p8.move(new Point3D(p7.getX(), p7.getY() - size, p7.getZ()));
 
-        Point3D p9 = new Point3D(p6);
-        p9.move(new Point3D(p9.getX() + s, p9.getY() + s, p9.getZ()));
-
-        Point3D p10 = new Point3D(p9);
-        p10.move(new Point3D(p10.getX(), p10.getY(), p10.getZ() - size));
-
-        return List.of(p, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+        return List.of(p, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 }

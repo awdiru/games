@@ -35,9 +35,9 @@ public class Vector3D extends Edge3D {
 
     public Point3D getDelta() {
         return new Point3D(
-                getEnd().getX() - getStart().getX(),
-                getEnd().getY() - getStart().getY(),
-                getEnd().getZ() - getStart().getZ()
+                p2.getX() - p1.getX(),
+                p2.getY() - p1.getY(),
+                p2.getZ() - p1.getZ()
         );
     }
 
@@ -72,12 +72,12 @@ public class Vector3D extends Edge3D {
         builder.append("[");
 
         if (!getStart().equals(new Point3D()))
-            builder.append(nextIndent).append("start=").append(p1.serialize(count));
+            builder.append(nextIndent).append("start=").append(p1.serialize(count)).append(" ");
 
         builder.append(nextIndent).append("end=").append(p2.serialize(count));
 
         if (!color.equals(DEFAULT_COLOR))
-            builder.append(nextIndent).append("color=").append(SerializeHelper.serializeColor(color));
+            builder.append(nextIndent).append(" color=").append(SerializeHelper.serializeColor(color));
 
         builder.append(indent).append("]");
         return builder.toString();

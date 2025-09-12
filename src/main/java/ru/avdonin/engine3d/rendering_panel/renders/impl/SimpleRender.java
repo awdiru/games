@@ -51,7 +51,7 @@ public class SimpleRender extends Render {
         List<Callable<Void>> tasks = new ArrayList<>();
 
         Graphics2D g2d = (Graphics2D) g;
-        if (!noiseFilter){
+        if (!noiseFilter) {
             g2d.setColor(Constants.BACKGROUND);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
@@ -73,6 +73,9 @@ public class SimpleRender extends Render {
                 else if (obj instanceof Object3D o)
                     for (Polygon3D polygon : o.getPolygons())
                         renderPolygon(g2d, polygon);
+                else if (obj instanceof PointsObject3D o)
+                    for (Point3D point: o.getPoints())
+                        renderPoint(g2d, point);
                 return null;
             });
         }
@@ -83,7 +86,7 @@ public class SimpleRender extends Render {
             Thread.currentThread().interrupt();
         }
 
-        if (noiseFilter) drawFrameBuffer((Graphics2D) g);
+        if (noiseFilter) drawFrameBuffer(g2d);
     }
 
     private void drawFrameBuffer(Graphics2D g2d) {
@@ -108,16 +111,14 @@ public class SimpleRender extends Render {
                 g2d.setColor(color);
                 g2d.fillRect(x, y, 1, 1);
             }
-            return;
-        }
-
-        if (depth < currentDepth - DEPTH_EPSILON) {
-            zBuffer.setDepth(x, y, depth);
-            frameBuffer.setColor(x, y, color);
-        } else if (Math.abs(depth - currentDepth) < DEPTH_EPSILON) {
-            if (RenderHelper.getBrightness(color) > RenderHelper.getBrightness(frameBuffer.getColor(x, y)))
+        } else {
+            if (depth < currentDepth - DEPTH_EPSILON) {
+                zBuffer.setDepth(x, y, depth);
                 frameBuffer.setColor(x, y, color);
-
+            } else if (Math.abs(depth - currentDepth) < DEPTH_EPSILON
+                    && RenderHelper.getBrightness(color) > RenderHelper.getBrightness(frameBuffer.getColor(x, y))) {
+                frameBuffer.setColor(x, y, color);
+            }
         }
     }
 
@@ -283,6 +284,9 @@ public class SimpleRender extends Render {
 
             renderLine2D(g2d, xCenter, yCenter, x2, y2, centerDepth, new Color(198, 198, 198));
         }
+        Boolean drawHeightLight = Context.get(Constants.DRAW_HEIGHT_LIGHT);
+        if (!drawHeightLight) return;
+
         Point3D dottedEnd = new Point3D(point.getX(), 0, point.getZ());
         Color dottedColor = new Color(27, 27, 27);
         renderDottedLine3D(g2d, point, dottedEnd, dottedColor, 20);

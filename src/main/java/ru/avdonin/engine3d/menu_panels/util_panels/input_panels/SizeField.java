@@ -1,10 +1,12 @@
 package ru.avdonin.engine3d.menu_panels.util_panels.input_panels;
 
 
+import ru.avdonin.engine3d.menu_panels.util_panels.CreatePanel;
+
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class SizeField<T> extends JPanel {
+public abstract class SizeField<T> extends CreatePanel<T> {
     JTextField valueField = new JTextField(10);
 
     public SizeField() {

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.helpers.*;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.PointPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -33,7 +33,7 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
 
     @Override
     public void move(Point3D p) {
-        Vector3D vector = new Vector3D(p1, p);
+        Vector3D vector = new Vector3D(new Point3D(p1), new Point3D(p));
         this.translate(vector);
     }
 
@@ -73,8 +73,8 @@ public class Edge3D extends AbstractObject3D<Edge3D> {
 
         JPanel panel = JFrameHelper.createPanel();
 
-        CoordsPane coord1 = new CoordsPane();
-        CoordsPane coord2 = new CoordsPane();
+        PointPane coord1 = new PointPane();
+        PointPane coord2 = new PointPane();
         ColorsPane color = new ColorsPane();
 
         JButton button = new JButton("->");

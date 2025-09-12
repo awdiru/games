@@ -3,17 +3,19 @@ package ru.avdonin.engine3d.space_builder;
 import lombok.Getter;
 import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.helpers.VectorHelper;
+import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Vector3D;
 
 import java.awt.*;
+import java.util.Set;
 
 @Getter
 public class SurfaceBuilder extends SpaceBuilder {
     protected double delta = 0.1;
     protected boolean isChangeDelta = false;
 
-    public void createEllipsoid(Point3D p, double size, double dx, double dy, double dz) {
+    public Set<Point3D> createEllipsoid(Point3D p, double size, double dx, double dy, double dz) {
         createCoordinateGrid(p, size);
         if (!isChangeScale)
             this.scale = Math.max(dx, Math.max(dy, dz)) * 2.5;
@@ -23,7 +25,7 @@ public class SurfaceBuilder extends SpaceBuilder {
             this.delta = 0.005 * Math.log(1 + scale / resolution);
         resetFlags();
 
-        createSpace(new Point3D(), p, size, () -> {
+        return (Set<Point3D>)(Set<?>) createSpace(new Point3D(), p, size, () -> {
             double surface = ((x * x / (dx * dx)) + (y * y / (dy * dy)) + (z * z / (dz * dz)));
             return surface <= 1 + delta && surface >= 1 - delta;
         });
@@ -84,11 +86,11 @@ public class SurfaceBuilder extends SpaceBuilder {
     public void createBoySurface(Point3D p, double size) {
         createCoordinateGrid(p, size);
         if (!isChangeScale)
-            this.scale = 7;
+            this.scale = 3;
         if (!isChangeResolution)
             this.resolution = scale / 200;
         if (!isChangeDelta)
-            this.delta = 0.1 * Math.log(1 + scale / resolution);
+            this.delta = 0.001 * Math.log(1 + scale / resolution);
         resetFlags();
 
         createSpace(new Point3D(), p, size, () -> {

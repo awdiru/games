@@ -3,8 +3,8 @@ package ru.avdonin.engine3d.menu_panels.util_panels.input_panels;
 import javax.swing.*;
 
 public class RotatePane extends JPanel {
-    private final CoordsPane point = new CoordsPane();
-    private final CoordsPane vector = new CoordsPane();
+    private final PointPane point = new PointPane();
+    private final PointPane vector = new PointPane();
     private final AngleField angle = new AngleField();
 
     public RotatePane() {
@@ -48,6 +48,11 @@ public class RotatePane extends JPanel {
             } catch (Exception e) {
                 return 0.0;
             }
+        }
+
+        @Override
+        public Double getInstance() {
+            return getValue();
         }
     }
 }

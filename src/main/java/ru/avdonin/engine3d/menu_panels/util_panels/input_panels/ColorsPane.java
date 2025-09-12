@@ -1,10 +1,12 @@
 package ru.avdonin.engine3d.menu_panels.util_panels.input_panels;
 
+import ru.avdonin.engine3d.menu_panels.util_panels.CreatePanel;
 import ru.avdonin.engine3d.menu_panels.util_panels.InputPanel;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class ColorsPane extends JPanel implements InputPanel<Integer> {
+public class ColorsPane extends CreatePanel<Color> implements InputPanel<Integer> {
     SizeField<Integer> red = new ColorField("red");
     SizeField<Integer> green = new ColorField("green");
     SizeField<Integer> blue = new ColorField("blue");
@@ -36,6 +38,12 @@ public class ColorsPane extends JPanel implements InputPanel<Integer> {
         alpha.clear();
     }
 
+    @Override
+    public Color getInstance() {
+        return new Color(getValue("red"), getValue("green"),
+                getValue("blue"), getValue("alpha"));
+    }
+
     private static class ColorField extends SizeField<Integer> {
         public ColorField(String name) {
             super(name);
@@ -49,6 +57,11 @@ public class ColorsPane extends JPanel implements InputPanel<Integer> {
             } catch (Exception e) {
                 return 255;
             }
+        }
+
+        @Override
+        public Integer getInstance() {
+            return getValue();
         }
     }
 }

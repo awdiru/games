@@ -1,5 +1,7 @@
 package ru.avdonin.engine3d.rendering_panel.buffer;
 
+import ru.avdonin.engine3d.Constants;
+
 import java.awt.*;
 
 public class FrameBuffer {
@@ -22,7 +24,7 @@ public class FrameBuffer {
     public void clearBuffer() {
         for (int x = 0; x < buffer.length; x++) {
             for (int y = 0; y < buffer[0].length; y++) {
-                buffer[x][y] = new Color(87, 87, 87);
+                buffer[x][y] = Constants.BACKGROUND;
             }
         }
     }

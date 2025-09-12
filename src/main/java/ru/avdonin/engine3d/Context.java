@@ -9,10 +9,15 @@ public class Context {
     private final static Map<String, Object> context = new HashMap<>();
 
     static {
+        clear();
+    }
+
+    public static void clear() {
         context.put(Constants.STORAGE_KEY, new SceneStorage());
         context.put(Constants.IS_SKELETON_KEY, Boolean.FALSE);
-        context.put(Constants.RENDERING_LIGHTS_OBJ, Boolean.TRUE);
-        context.put(Constants.NOISE_FILTER, Boolean.TRUE);
+        context.put(Constants.RENDERING_LIGHTS_OBJ, Boolean.FALSE);
+        context.put(Constants.NOISE_FILTER, Boolean.FALSE);
+        context.put(Constants.DRAW_HEIGHT_LIGHT, Boolean.FALSE);
     }
 
     public static <V> V get(String key) {

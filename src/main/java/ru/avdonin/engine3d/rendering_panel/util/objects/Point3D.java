@@ -7,7 +7,7 @@ import ru.avdonin.engine3d.helpers.JFrameHelper;
 import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.helpers.SerializeHelper;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.PointPane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
@@ -29,6 +29,7 @@ public class Point3D extends AbstractObject3D<Point3D> {
 
     public Point3D(Point3D p) {
         this(p.x, p.y, p.z);
+        this.color = p.color;
     }
 
     public Point3D(double x, double y, double z) {
@@ -134,7 +135,9 @@ public class Point3D extends AbstractObject3D<Point3D> {
     }
 
     public Color getColor() {
-        return parent == null ? color : parent.getColor();
+        if (parent == null || parent.getColor().equals(DEFAULT_COLOR))
+            return color;
+        return parent.getColor();
     }
 
     @Override
@@ -148,7 +151,7 @@ public class Point3D extends AbstractObject3D<Point3D> {
         frame.setTitle("New Point");
 
         JPanel panel = JFrameHelper.createPanel();
-        CoordsPane coords = new CoordsPane();
+        PointPane coords = new PointPane();
         ColorsPane color = new ColorsPane();
 
         JButton button = new JButton("->");

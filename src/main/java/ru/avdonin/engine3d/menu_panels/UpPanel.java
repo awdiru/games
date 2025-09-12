@@ -1,15 +1,15 @@
 package ru.avdonin.engine3d.menu_panels;
 
-import lombok.Getter;
+import ru.avdonin.engine3d.Constants;
+import ru.avdonin.engine3d.Context;
 import ru.avdonin.engine3d.rendering_panel.util.Creatable;
-import ru.avdonin.engine3d.rendering_panel.util.objects.*;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Cube;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.House;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Plane;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.surface.Surface;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.ListObj;
 import ru.avdonin.engine3d.saver.Saver;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 
 public class UpPanel extends JPanel {
     public UpPanel() {
@@ -20,6 +20,9 @@ public class UpPanel extends JPanel {
     private void init() {
         add(createSaveButton());
         add(createObjectButton());
+        add(createSurfaceButton());
+        add(createFlagsMenuButton());
+        add(createClearContextButton());
     }
 
     private JButton createSaveButton() {
@@ -30,11 +33,29 @@ public class UpPanel extends JPanel {
 
     private JButton createObjectButton() {
         JButton button = new JButton("create object");
-        button.addActionListener(e -> showCreateObjContextMenu(button));
+        button.addActionListener(e -> showObjContextMenu(button));
         return button;
     }
 
-    private void showCreateObjContextMenu(JButton button) {
+    private JButton createSurfaceButton() {
+        JButton button = new JButton("create surface");
+        button.addActionListener(e -> showSurfaceContextMenu(button));
+        return button;
+    }
+
+    private JButton createFlagsMenuButton() {
+        JButton button = new JButton("settings");
+        button.addActionListener(e -> showFlagsContextMenu(button));
+        return button;
+    }
+
+    private JButton createClearContextButton() {
+        JButton button = new JButton("clear");
+        button.addActionListener(e -> Context.clear());
+        return button;
+    }
+
+    private void showObjContextMenu(JButton button) {
         JPopupMenu menu = new JPopupMenu();
 
         for (ListObj obj : ListObj.values()) {
@@ -45,31 +66,43 @@ public class UpPanel extends JPanel {
             });
             menu.add(item);
         }
-
         menu.show(button, 0, button.getHeight());
     }
 
-    @Getter
-    private enum ListObj {
-        POINT("Point", Point3D.class),
-        EDGE("Edge", Edge3D.class),
-        VECTOR("Vector", Vector3D.class),
-        POLYGON("Polygon", Polygon3D.class),
-        LIGHT("Light", Light3D.class),
-        PLANE("Plane", Plane.class),
-        CUBE("Cube", Cube.class),
-        HOUSE("House", House.class);
+    private void showSurfaceContextMenu(JButton button) {
+        JPopupMenu menu = new JPopupMenu();
 
-        private final String name;
-        private final Class<? extends Creatable> aClass;
-
-        ListObj(String name, Class<? extends Creatable> aClass) {
-            this.name = name;
-            this.aClass = aClass;
+        for (Surface obj : Surface.values()) {
+            JMenuItem item = new JMenuItem(obj.getName());
+            item.addActionListener(e -> {
+                Creatable o = obj.newInstance();
+                o.openCreateFrame();
+            });
+            menu.add(item);
         }
-
-        public Creatable newInstance() {
-            return Creatable.newInstance(aClass.getName());
-        }
+        menu.show(button, 0, button.getHeight());
     }
+
+    private void showFlagsContextMenu(JButton button) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(setFlagCheckBox("noise filter", Constants.NOISE_FILTER));
+        menu.add(setFlagCheckBox("render lights", Constants.RENDERING_LIGHTS_OBJ));
+        menu.add(setFlagCheckBox("draw the height of the light", Constants.DRAW_HEIGHT_LIGHT));
+        menu.show(button, 0, button.getHeight());
+    }
+
+    private JCheckBox setFlagCheckBox(String name, String contextKey) {
+        Boolean isSelected = Context.get(contextKey);
+        JCheckBox checkBox = new JCheckBox(name, isSelected);
+        checkBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                Context.put(contextKey, Boolean.TRUE);
+            } else {
+                Context.put(contextKey, Boolean.FALSE);
+            }
+        });
+        return checkBox;
+    }
+
+
 }

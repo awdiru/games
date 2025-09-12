@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.avdonin.engine3d.Constants;
 import ru.avdonin.engine3d.Context;
-import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.PointPane;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.RotatePane;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
@@ -48,7 +48,7 @@ public class LeftPanel extends JPanel {
         JPanel panel = new JPanel();
 
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        CoordsPane coords = new CoordsPane();
+        PointPane coords = new PointPane();
         JButton button = createButton(e -> {
             double x = coords.getValue("x");
             double y = coords.getValue("y");

@@ -1,15 +1,13 @@
 package ru.avdonin.engine3d.rendering_panel.util.objects;
 
 import lombok.Getter;
-import lombok.Setter;
 import ru.avdonin.engine3d.helpers.*;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.ColorsPane;
-import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.CoordsPane;
+import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.PointPane;
 import ru.avdonin.engine3d.menu_panels.util_panels.input_panels.SizeField;
 import ru.avdonin.engine3d.rendering_panel.util.AbstractObject3D;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Objects;
 
 @Getter
@@ -168,8 +166,8 @@ public class Light3D extends AbstractObject3D<Light3D> {
         frame.setTitle("New Light");
 
         JPanel panel = JFrameHelper.createPanel();
-        CoordsPane p = new CoordsPane();
-        CoordsPane v = new CoordsPane();
+        PointPane p = new PointPane();
+        PointPane v = new PointPane();
         ColorsPane c = new ColorsPane();
         DoubleField a = new DoubleField("Angle");
         DoubleField i = new DoubleField("Intensity");
@@ -235,5 +233,9 @@ public class Light3D extends AbstractObject3D<Light3D> {
             }
         }
 
+        @Override
+        public Double getInstance() {
+            return getValue();
+        }
     }
 }

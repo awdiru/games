@@ -1,8 +1,8 @@
-package ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj;
+package ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.obj;
 
 import ru.avdonin.engine3d.rendering_panel.util.objects.Point3D;
 import ru.avdonin.engine3d.rendering_panel.util.objects.Polygon3D;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.TestObj;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.TestObj;
 
 import java.util.ArrayList;
 import java.util.List;

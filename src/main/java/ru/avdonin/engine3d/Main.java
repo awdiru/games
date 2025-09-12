@@ -3,10 +3,10 @@ package ru.avdonin.engine3d;
 import ru.avdonin.engine3d.helpers.SavedHelper;
 import ru.avdonin.engine3d.rendering_panel.renders.impl.SimpleRender;
 import ru.avdonin.engine3d.rendering_panel.util.objects.*;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.House;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Sphere;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.obj.House;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.obj.Sphere;
 import ru.avdonin.engine3d.saver.Saver;
-import ru.avdonin.engine3d.rendering_panel.util.objects.test_objects.obj.Cube;
+import ru.avdonin.engine3d.rendering_panel.util.objects.default_obj.test_objects.obj.Cube;
 import ru.avdonin.engine3d.space_builder.SpaceBuilder;
 import ru.avdonin.engine3d.space_builder.SurfaceBuilder;
 
@@ -130,11 +130,10 @@ public class Main {
             SimpleRender renderPanel = new SimpleRender(600, 600);
             renderPanel.setSkeleton(false);
             renderPanel.setRenderingLightsObj(false);
-            renderPanel.setNoiseFilter(false);
 
             SpaceBuilder builder = new SpaceBuilder();
 
-            Point3D center = new Point3D(0, 0, 0);
+            Point3D center = new Point3D(0, 200, 0);
 
             Camera3D camera = renderPanel.getCamera();
             camera.move(new Point3D(0, 500, -1200));
@@ -142,9 +141,9 @@ public class Main {
 
             builder.createLights(center, 1200);
 
-            SurfaceBuilder surfaceBuilder = new SurfaceBuilder();
+            //SurfaceBuilder surfaceBuilder = new SurfaceBuilder();
             //surfaceBuilder.createEllipsoid(center, 1000, 10, 9, 8);
-            surfaceBuilder.createHyperboloid(center, 1000, false, 310, 250, 300, 20);
+            //surfaceBuilder.createHyperboloid(center, 1000, false, 310, 250, 300, 20);
             //surfaceBuilder.createSinWave(center, 1000, 2, 1);
             //surfaceBuilder.createThor(center, 1000, 3, 1.5);
             //surfaceBuilder.createBoySurface(center, 1000);
